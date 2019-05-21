@@ -29,6 +29,8 @@ import java.util.Collection;
 
 public class DataGenerator {
 
+    static String name = "mymap";
+
     static Data createData() {
         DefaultSerializationServiceBuilder serializationServiceBuilder = new DefaultSerializationServiceBuilder();
         serializationServiceBuilder.addDataSerializableFactory(1, new DataSerializableFactory() {
@@ -44,9 +46,9 @@ public class DataGenerator {
         return ss.toData(list);
     }
 
-    static ClientMessage createPutRequest(String mapName) {
+    static ClientMessage createPutRequest() {
         Data data = createData();
-        ClientMessage clientMessage = MapPutCodec.encodeRequest(mapName, data, data, 1, 1);
+        ClientMessage clientMessage = MapPutCodec.encodeRequest(name, data, data, 1, 1);
         return ClientMessage.createForDecode(clientMessage.buffer(), 0);
 
     }
