@@ -54,9 +54,9 @@ public class EncodeDecodeBenchmark {
     }
 
     @Benchmark
-    public void testPutEncodeDecodeRequest() {
+    public Object testPutEncodeDecodeRequest() {
         ClientMessage clientMessage = MapPutCodec.encodeRequest(DataGenerator.name, data, data, 1, 1);
-        MapPutCodec.decodeRequest(ClientMessage.createForDecode(clientMessage.buffer(), 0));
+        return MapPutCodec.decodeRequest(ClientMessage.createForDecode(clientMessage.buffer(), 0));
     }
 
 //    @Benchmark

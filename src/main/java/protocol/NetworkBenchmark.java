@@ -63,8 +63,8 @@ public class NetworkBenchmark {
 
         int port = 5701;
 
-        new Thread(() -> TcpServer.createTcpServer(port, request.buffer().byteArray().length)).start();
-        Thread.sleep(1000);
+//        new Thread(() -> TcpServer.createTcpServer(port, request.buffer().byteArray().length)).start();
+//        Thread.sleep(1000);
 
         try {
             //Socket socket = new Socket("10.216.1.18", 5701);
@@ -80,7 +80,7 @@ public class NetworkBenchmark {
     }
 
     @Benchmark
-    public void testPutEncodeDecodeRequest_network() throws IOException {
+    public Object testPutEncodeDecodeRequest_network() throws IOException {
         ClientMessage clientMessage = DataGenerator.createPutRequest();
         byte[] b = clientMessage.buffer().byteArray();
         int length = b.length;
@@ -92,7 +92,7 @@ public class NetworkBenchmark {
             read += inputStream.read(incoming, read, length - read);
         }
         SafeBuffer safeBuffer = new SafeBuffer(incoming);
-        MapPutCodec.decodeRequest(ClientMessage.createForDecode(safeBuffer, 0));
+        return MapPutCodec.decodeRequest(ClientMessage.createForDecode(safeBuffer, 0));
     }
 
 
