@@ -37,7 +37,7 @@ import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.AverageTime)
 @State(Scope.Thread)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
 @Warmup(iterations = 10)
 @Measurement(iterations = 5)
 public class EncodeDecodeBenchmark {

@@ -26,10 +26,12 @@ import com.hazelcast.spi.serialization.SerializationService;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class DataGenerator {
 
     static String name = "mymap";
+    private static AtomicLong atomicLong = new AtomicLong(1);
 
     static Data createData() {
         DefaultSerializationServiceBuilder serializationServiceBuilder = new DefaultSerializationServiceBuilder();
@@ -49,6 +51,8 @@ public class DataGenerator {
     static ClientMessage createPutRequest() {
         Data data = createData();
         ClientMessage clientMessage = MapPutCodec.encodeRequest(name, data, data, 1, 1);
+        clientMessage.setCorrelationId(atomicLong.incrementAndGet());
+        clientMessage.addFlag(ClientMessage.BEGIN_AND_END_FLAGS);
         return ClientMessage.createForDecode(clientMessage.buffer(), 0);
 
     }

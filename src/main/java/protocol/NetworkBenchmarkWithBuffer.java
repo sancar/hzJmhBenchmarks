@@ -45,7 +45,7 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @Warmup(iterations = 10)
 @Measurement(iterations = 5)
-public class NetworkBenchmark {
+public class NetworkBenchmarkWithBuffer {
 
     private Data data;
     private String name = "mymap";
@@ -63,7 +63,7 @@ public class NetworkBenchmark {
 
         int port = 5701;
 
-//        new Thread(() -> TcpServer.createTcpServer(port, request.getFrameLength())).start();
+//        new Thread(() -> TcpServerWithBuffer.createTcpServer(port)).start();
 //        Thread.sleep(1000);
 
         try {
@@ -100,7 +100,7 @@ public class NetworkBenchmark {
 
 
         Options opt = new OptionsBuilder()
-                .include(NetworkBenchmark.class.getSimpleName())
+                .include(NetworkBenchmarkWithBuffer.class.getSimpleName())
                 .forks(1)
                 .build();
 
