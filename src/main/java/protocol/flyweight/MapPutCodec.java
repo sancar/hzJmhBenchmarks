@@ -16,12 +16,10 @@
 
 package protocol.flyweight;
 
+import com.hazelcast.internal.serialization.impl.HeapData;
 import com.hazelcast.nio.Bits;
 import com.hazelcast.nio.Connection;
 import com.hazelcast.nio.serialization.Data;
-
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
 
 /**
  * <p>
@@ -38,7 +36,7 @@ import java.nio.charset.StandardCharsets;
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * |                        Frame Length                           |
  * +-----------------------------+---------------------------------+
- * |    Nullable   |  Flags      |               Type              |
+ * |     Flags  |                |               Type              |
  * +-----------------------------+---------------------------------+
  * |                                                               |
  * +                       CorrelationId                           +
@@ -59,7 +57,7 @@ import java.nio.charset.StandardCharsets;
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * |                        Frame Length                           |
  * +---------------------------------------------------------------+
- * |                                                               |
+ * |     Flags  |                                                  |
  * |                         String name                           |
  * ...                                                            ...
  * ...                                                            ...
@@ -68,7 +66,7 @@ import java.nio.charset.StandardCharsets;
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * |                        Frame Length                           |
  * +---------------------------------------------------------------+
- * |                                                               |
+ * |     Flags  |                                                  |
  * |                         Data key                              |
  * ...                                                            ...
  * ...                                                            ...
@@ -77,7 +75,7 @@ import java.nio.charset.StandardCharsets;
  * +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  * |                        Frame Length                           |
  * +---------------------------------------------------------------+
- * |                                                               |
+ * |     Flags  |                                                  |
  * |                         Data value                            |
  * ...                                                            ...
  * ...                                                            ...
@@ -91,10 +89,9 @@ public class MapPutCodec {
 
 
     // Fixed fields offsets in header
-    private static final int FRAME_LENGTH_FIELD_OFFSET = 0;
-    private static final int NULLABLE_FIELD_OFFSET = FRAME_LENGTH_FIELD_OFFSET + Bits.INT_SIZE_IN_BYTES;
-    private static final int FLAGS_FIELD_OFFSET = NULLABLE_FIELD_OFFSET + Bits.BYTE_SIZE_IN_BYTES;
-    private static final int TYPE_FIELD_OFFSET = FLAGS_FIELD_OFFSET + Bits.BYTE_SIZE_IN_BYTES;
+//    private static final int FRAME_LENGTH_FIELD_OFFSET = 0;
+//    private static final int FLAGS_FIELD_OFFSET = FRAME_LENGTH_FIELD_OFFSET + Bits.INT_SIZE_IN_BYTES;
+    private static final int TYPE_FIELD_OFFSET = 0;
     private static final int CORRELATION_ID_FIELD_OFFSET = TYPE_FIELD_OFFSET + Bits.SHORT_SIZE_IN_BYTES;
     private static final int PARTITION_ID_FIELD_OFFSET = CORRELATION_ID_FIELD_OFFSET + Bits.LONG_SIZE_IN_BYTES;
     private static final int THREAD_ID_FIELD_OFFSET = PARTITION_ID_FIELD_OFFSET + Bits.INT_SIZE_IN_BYTES;
@@ -102,12 +99,12 @@ public class MapPutCodec {
     private static final int HEADER_SIZE = TTL_ID_FIELD_OFFSET + Bits.LONG_SIZE_IN_BYTES;
 
     //Payload fields on frames
-    private static final int PAYLOAD_FIELD_OFFSET = FRAME_LENGTH_FIELD_OFFSET + Bits.INT_SIZE_IN_BYTES;
+    private static final int PAYLOAD_FIELD_OFFSET = 0;
 
     // Vraible fields indexes in incomming byte arrays
-    private static final int NAME_INDEX = 0;
-    private static final int KEY_INDEX = 1;
-    private static final int VALUE_INDEX = 2;
+    private static final int NAME_INDEX = 1;
+    private static final int KEY_INDEX = 2;
+    private static final int VALUE_INDEX = 3;
 
     private transient boolean isRetryable;
     private transient boolean acquiresResource;
@@ -120,101 +117,64 @@ public class MapPutCodec {
     }
 
     public static NewClientMessage encodeRequest(String name, Data key, Data value, long threadId, long ttl) {
-        int requiredDataSize = com.hazelcast.client.impl.protocol.codec.MapPutCodec.RequestParameters.calculateDataSize(name, key, value, threadId, ttl);
         NewClientMessage clientMessage = NewClientMessage.createForEncode(HEADER_SIZE);
-        setFrameLength(clientMessage);
         setMessageType(clientMessage);
         clientMessage.setRetryable(false);
         clientMessage.setAcquiresResource(false);
         clientMessage.setOperationName("Map.put");
         setThreadId(clientMessage, threadId);
         setTTL(clientMessage, ttl);
-        clientMessage.addFrame(createNameBuffer(name).array());
-        clientMessage.addFrame(createKeyBuffer(key).array());
-        clientMessage.addFrame(createValueBuffer(value).array());
+        clientMessage.addFrame(name.getBytes(Bits.UTF_8));
+        clientMessage.addFrame(key.toByteArray());
+        clientMessage.addFrame(value.toByteArray());
         return clientMessage;
     }
 
-    private static void setFrameLength(NewClientMessage clientMessage) {
-        clientMessage.buffer.putInt(FRAME_LENGTH_FIELD_OFFSET, HEADER_SIZE);
-    }
-
-    private static long getFrameLength(NewClientMessage clientMessage) {
-        return clientMessage.buffer.getLong(FRAME_LENGTH_FIELD_OFFSET);
-    }
-
     private static void setMessageType(NewClientMessage clientMessage) {
-        clientMessage.buffer.putShort(TYPE_FIELD_OFFSET, (short) REQUEST_TYPE);
+        clientMessage.getHeader().putShort(TYPE_FIELD_OFFSET, (short) REQUEST_TYPE);
     }
 
     private static short getMessageType(NewClientMessage clientMessage) {
-        return clientMessage.buffer.getShort(TYPE_FIELD_OFFSET);
+        return clientMessage.getHeader().getShort(TYPE_FIELD_OFFSET);
     }
 
     private static void setThreadId(NewClientMessage clientMessage, long value) {
-        clientMessage.buffer.putLong(THREAD_ID_FIELD_OFFSET, value);
+        clientMessage.getHeader().putLong(THREAD_ID_FIELD_OFFSET, value);
     }
 
     private static long getThreadID(NewClientMessage clientMessage) {
-        return clientMessage.buffer.getLong(THREAD_ID_FIELD_OFFSET);
+        return clientMessage.getHeader().getLong(THREAD_ID_FIELD_OFFSET);
     }
 
     private static void setTTL(NewClientMessage clientMessage, long value) {
-        clientMessage.buffer.putLong(TTL_ID_FIELD_OFFSET, value);
+        clientMessage.getHeader().putLong(TTL_ID_FIELD_OFFSET, value);
     }
 
     private static long getTTL(NewClientMessage clientMessage) {
-        return clientMessage.buffer.getLong(TTL_ID_FIELD_OFFSET);
-    }
-
-    private static ByteBuffer createNameBuffer(String name) {
-        byte[] bytes = name.getBytes(Bits.UTF_8);
-        int frameLength = bytes.length + Bits.INT_SIZE_IN_BYTES;
-        ByteBuffer buffer = ByteBuffer.allocate(frameLength);
-        buffer.putInt(FRAME_LENGTH_FIELD_OFFSET, frameLength);
-        buffer.put(bytes, 0, PAYLOAD_FIELD_OFFSET);
-
-        StandardCharsets.UTF_8.newEncoder();
-
-        return buffer;
+        return clientMessage.getHeader().getLong(TTL_ID_FIELD_OFFSET);
     }
 
     private static String getName(NewClientMessage clientMessage) {
         byte[] frame = clientMessage.getFrame(NAME_INDEX);
-        ByteBuffer wrap = ByteBuffer.wrap(frame);
-        int frameLength = wrap.getInt(FRAME_LENGTH_FIELD_OFFSET);
-        return new String(frame, PAYLOAD_FIELD_OFFSET, frameLength - PAYLOAD_FIELD_OFFSET,   Bits.UTF_8);
-    }
-
-    private static ByteBuffer createKeyBuffer(Data key) {
-        int frameLength = key.totalSize() + Bits.INT_SIZE_IN_BYTES;
-        ByteBuffer buffer = ByteBuffer.allocate(frameLength);
-        buffer.putInt(FRAME_LENGTH_FIELD_OFFSET, frameLength);
-        key.copyTo(buffer.array(), PAYLOAD_FIELD_OFFSET);
-        return buffer;
+        return new String(frame, Bits.UTF_8);
     }
 
     private static Data getKey(NewClientMessage clientMessage) {
-        return null;
-    }
-
-    private static ByteBuffer createValueBuffer(Data value) {
-        int frameLength = value.totalSize() + Bits.INT_SIZE_IN_BYTES;
-        ByteBuffer buffer = ByteBuffer.allocate(frameLength);
-        buffer.putInt(FRAME_LENGTH_FIELD_OFFSET, frameLength);
-        value.copyTo(buffer.array(), PAYLOAD_FIELD_OFFSET);
-        return buffer;
+        byte[] frame = clientMessage.getFrame(KEY_INDEX);
+        return new HeapData(frame);
     }
 
     private static Data getValue(NewClientMessage clientMessage) {
-        return null;
+        byte[] frame = clientMessage.getFrame(VALUE_INDEX);
+        return new HeapData(frame);
     }
 
 
     public static RequestParameters decodeRequest(NewClientMessage clientMessage) {
         RequestParameters parameters = new RequestParameters();
-        int length = clientMessage.buffer.array().length;
-        long frameLength = getFrameLength(clientMessage);
+//        int length = clientMessage.headerBuffer.array().length;    long frameLength = getFrameLength(clientMessage);
+//        HEADER_SIZE > (length |  frameLength)
+//        3 < clientMessage.variableFields.size();
 
         parameters.name = getName(clientMessage);
         parameters.key = getKey(clientMessage);
@@ -234,6 +194,7 @@ public class MapPutCodec {
 
         public RequestParameters() {
         }
+
         static {
             TYPE = MapPutCodec.REQUEST_TYPE;
         }

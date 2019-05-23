@@ -14,11 +14,8 @@
  * limitations under the License.
  */
 
-package protocol;
+package protocol.flyweight;
 
-import com.hazelcast.client.impl.protocol.ClientMessage;
-import com.hazelcast.client.impl.protocol.codec.MapPutCodec;
-import com.hazelcast.client.impl.protocol.util.SafeBuffer;
 import com.hazelcast.nio.serialization.Data;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
@@ -33,74 +30,37 @@ import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
+import protocol.DataGenerator;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.AverageTime)
 @State(Scope.Thread)
-@OutputTimeUnit(TimeUnit.MILLISECONDS)
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
 @Warmup(iterations = 10)
 @Measurement(iterations = 5)
-public class NetworkBenchmarkWithBuffer {
+public class FlyweightBenchmark {
 
     private Data data;
-    private String name = "mymap";
-    private ClientMessage request;
-
-    OutputStream outputStream;
-    InputStream inputStream;
+    private NewClientMessage request;
 
     @Setup
-    public void prepare() throws InterruptedException {
+    public void prepare() {
         data = DataGenerator.createData();
         System.out.println("Data(key or value) size in bytes " + data.dataSize());
-        request = DataGenerator.createPutRequest();
-        System.out.println("Message size in bytes " + request.getFrameLength());
-
-        int port = 5701;
-
-//        new Thread(() -> TcpServerWithBuffer.createTcpServer(port)).start();
-//        Thread.sleep(1000);
-
-        try {
-            //Socket socket = new Socket("10.216.1.18", 5701);
-            Socket socket = new Socket("localhost", port);
-            outputStream = socket.getOutputStream();
-            inputStream = socket.getInputStream();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
+//        request = DataGenerator.createPutRequest();
+//        System.out.println("Message size in bytes " + request.getFrameLength());
     }
 
     @Benchmark
-    public Object testPutEncodeDecodeRequest_network() throws IOException {
-        ClientMessage clientMessage = DataGenerator.createPutRequest();
-        byte[] b = clientMessage.buffer().byteArray();
-        int length = clientMessage.getFrameLength();
-        outputStream.write(b, 0, length);
-        byte[] incoming = new byte[length];
-
-        int read = 0;
-        while (read != length) {
-            read += inputStream.read(incoming, read, length - read);
-        }
-        SafeBuffer safeBuffer = new SafeBuffer(incoming);
-        return MapPutCodec.decodeRequest(ClientMessage.createForDecode(safeBuffer, 0));
+    public void testPutEncodeDecodeRequest() {
     }
-
 
     public static void main(String[] args) {
 
 
         Options opt = new OptionsBuilder()
-                .include(NetworkBenchmarkWithBuffer.class.getSimpleName())
+                .include(FlyweightBenchmark.class.getSimpleName())
                 .forks(1)
                 .build();
 

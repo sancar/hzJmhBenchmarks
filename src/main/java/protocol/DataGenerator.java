@@ -33,7 +33,7 @@ public class DataGenerator {
     static String name = "mymap";
     private static AtomicLong atomicLong = new AtomicLong(1);
 
-    static Data createData() {
+    public static Data createData() {
         DefaultSerializationServiceBuilder serializationServiceBuilder = new DefaultSerializationServiceBuilder();
         serializationServiceBuilder.addDataSerializableFactory(1, new DataSerializableFactory() {
             public IdentifiedDataSerializable create(int typeId) {

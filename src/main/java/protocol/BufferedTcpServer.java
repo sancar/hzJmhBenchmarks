@@ -26,19 +26,25 @@ import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
-public class TcpServerWithBuffer {
+public class BufferedTcpServer {
 
-    private static final Queue<ClientMessage> writeQueue = new ConcurrentLinkedQueue<>();
+    private static final LinkedBlockingQueue<ClientMessage> writeQueue = new LinkedBlockingQueue<>();
     private static final ByteBuffer sendBuffer = ByteBuffer.allocate(128 * 1024);
     private static final ClientMessageEncoder encoder = new ClientMessageEncoder();
 
     static {
         sendBuffer.limit(0);
         encoder.dst(sendBuffer);
-        encoder.src(writeQueue::poll);
+        encoder.src(() -> {
+            try {
+                return writeQueue.take();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                return null;
+            }
+        });
     }
 
 
@@ -86,6 +92,6 @@ public class TcpServerWithBuffer {
     }
 
     public static void main(String[] args) {
-        TcpServerWithBuffer.createTcpServer(5701);
+        BufferedTcpServer.createTcpServer(5701);
     }
 }
