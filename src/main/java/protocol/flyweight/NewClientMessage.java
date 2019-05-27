@@ -24,12 +24,14 @@ import java.util.LinkedList;
 
 public class NewClientMessage {
 
-    private static final int FRAME_LENGTH_FIELD_OFFSET = 0;
-    private static final int FLAGS_FIELD_OFFSET = FRAME_LENGTH_FIELD_OFFSET + Bits.INT_SIZE_IN_BYTES;
+
+    private static final int TYPE_FIELD_OFFSET = 0;
+    private static final int CORRELATION_ID_OFFSET = TYPE_FIELD_OFFSET + Bits.INT_SIZE_IN_BYTES;
     public static final byte NEXT_FLAG = (byte) 0x80;
 
     LinkedList<byte[]> frames = new LinkedList<>();
 
+    private transient byte flags;
     private transient boolean isRetryable;
     private transient boolean acquiresResource;
     private transient String operationName;
@@ -95,7 +97,7 @@ public class NewClientMessage {
     public boolean writeTo(ByteBuffer dst) {
         for (; ; ) {
             byte[] frame = frames.get(writeIndex);
-            boolean isLastFrame = writeIndex == frames.size();
+            boolean isLastFrame = writeIndex == frames.size() - 1;
             if (writeBuffer(dst, frame, isLastFrame)) {
                 writeOffset = -1;
                 if (isLastFrame) {
@@ -162,7 +164,7 @@ public class NewClientMessage {
      * @return The flags field value.
      */
     public byte getFlags() {
-        return getHeader().get(FLAGS_FIELD_OFFSET);
+        return flags;
     }
 
     /**
@@ -172,15 +174,14 @@ public class NewClientMessage {
      * @return The ClientMessage with the new flags field value.
      */
     public NewClientMessage addFlag(final byte flags) {
-        ByteBuffer header = getHeader();
-        header.put(FLAGS_FIELD_OFFSET, (byte) (getFlags() | flags));
+        this.flags  |= flags;
         return this;
     }
 
     public boolean readFrom(ByteBuffer src) {
         for (; ; ) {
             if (readFrame(src)) {
-                if (!isFlagSet(frames.get(readIndex)[FLAGS_FIELD_OFFSET], NEXT_FLAG)) {
+                if (!isFlagSet(flags, NEXT_FLAG)) {
                     return true;
                 }
                 readIndex++;
@@ -201,9 +202,7 @@ public class NewClientMessage {
         }
         if (readOffset == -1) {
             int frameLength = Bits.readIntL(src);
-            // we need to restore the position; as if we didn't read the frame-length
-            src.position(src.position() + Bits.INT_SIZE_IN_BYTES);
-            src.position(src.position() + Bits.BYTE_SIZE_IN_BYTES);
+            flags = src.get();
 
             readOffset = 0;
             byte[] bytes = new byte[frameLength];
@@ -214,13 +213,7 @@ public class NewClientMessage {
         return accumulate(src, frame, frame.length - readOffset);
     }
 
-    private boolean isFlagSet(byte[] frame, byte flag) {
-        byte flags = frame[FLAGS_FIELD_OFFSET];
-        int i = flags & flag;
-        return i == flag;
-    }
-
-    private boolean isFlagSet(byte flags, byte flag) {
+  private boolean isFlagSet(byte flags, byte flag) {
         int i = flags & flag;
         return i == flag;
     }
@@ -237,4 +230,7 @@ public class NewClientMessage {
         return false;
     }
 
+    public void setCorrelationId(long correlationId) {
+        getHeader().putLong(CORRELATION_ID_OFFSET, correlationId);
+    }
 }
