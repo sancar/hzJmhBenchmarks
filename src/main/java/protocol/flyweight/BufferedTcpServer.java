@@ -17,7 +17,6 @@
 package protocol.flyweight;
 
 import com.hazelcast.internal.util.counters.SwCounter;
-import com.hazelcast.util.function.Consumer;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -25,6 +24,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.function.Consumer;
 
 public class BufferedTcpServer {
 
