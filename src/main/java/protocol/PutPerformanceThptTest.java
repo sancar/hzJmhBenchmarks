@@ -40,12 +40,12 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 
-@BenchmarkMode(Mode.AverageTime)
+@BenchmarkMode(Mode.Throughput)
 @State(Scope.Thread)
-@OutputTimeUnit(TimeUnit.MICROSECONDS)
+@OutputTimeUnit(TimeUnit.SECONDS)
 @Warmup(iterations = 10)
 @Measurement(iterations = 5)
-public class PutPerformanceBenchmark {
+public class PutPerformanceThptTest {
 
     private IMap<Object, Object> map;
     //    private HazelcastInstance hazelcastInstance;
@@ -81,7 +81,7 @@ public class PutPerformanceBenchmark {
 
     public static void main(String[] args) {
         Options opt = new OptionsBuilder()
-                .include(PutPerformanceBenchmark.class.getSimpleName())
+                .include(PutPerformanceThptTest.class.getSimpleName())
                 .forks(1)
                 .build();
 
