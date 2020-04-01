@@ -4,15 +4,11 @@ Avro Fast Query Enabled was giving worst results.
 These results for fast query disabled.  
  
  
- Benchmark                                         Mode  Cnt  Score   Error  Units
- PortableQueryLatency.testQueryCreatedAt           avgt    5  0.196 ± 0.031  us/op
- AvroQueryLatency.testQueryCreatedAt               avgt    5  1.427 ± 0.013  us/op
- PortableQueryLatency.testQueryUser_location_city  avgt    5  0.840 ± 0.128  us/op
- AvroQueryLatency.testQueryUser_location_city      avgt    5  1.626 ± 0.113  us/op
-
-Benchmark                       Mode  Cnt  Score   Error  Units
-PortableQueryLatency.testQuery  avgt    5  0.701 ± 0.011  us/op
-AvroQueryLatency.testQuery      avgt    5  1.585 ± 0.061  us/op
+Benchmark                                         Mode  Cnt  Score   Error  Units
+PortableQueryLatency.testQueryCreatedAt           avgt    5  0.196 ± 0.031  us/op
+AvroQueryLatency.testQueryCreatedAt               avgt    5  1.427 ± 0.013  us/op
+PortableQueryLatency.testQueryUser_location_city  avgt    5  0.840 ± 0.128  us/op
+AvroQueryLatency.testQueryUser_location_city      avgt    5  1.626 ± 0.113  us/op
 
  # Query Throughput Results
  
