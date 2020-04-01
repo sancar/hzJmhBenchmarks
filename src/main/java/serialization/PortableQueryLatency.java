@@ -57,7 +57,6 @@ public class PortableQueryLatency {
 
     private InternalSerializationService serializationService;
     private Data data;
-    String fieldPath = "user.location.city";
 
     @Setup
     public void prepare() {
@@ -73,24 +72,36 @@ public class PortableQueryLatency {
     public void teardown() {
     }
 
-
     @Benchmark
-    public Object testQuery() throws IOException {
+    public Object testQueryUser_location_city() throws IOException {
         PortableReader reader = serializationService.createPortableReader(data);
         PortableContext context = serializationService.getPortableContext();
         ClassDefinition classDefinition = context.lookupClassDefinition(this.data);
-        FieldDefinition fieldDefinition = context.getFieldDefinition(classDefinition, fieldPath);
+        FieldDefinition fieldDefinition = context.getFieldDefinition(classDefinition, "user.location.city");
         if (fieldDefinition == null) {
             return null;
         }
-        return ((DefaultPortableReader) reader).read(fieldPath);
+        return ((DefaultPortableReader) reader).read("user.location.city");
+    }
+
+    @Benchmark
+    public Object testQueryCreatedAt() throws IOException {
+        PortableReader reader = serializationService.createPortableReader(data);
+        PortableContext context = serializationService.getPortableContext();
+        ClassDefinition classDefinition = context.lookupClassDefinition(this.data);
+        FieldDefinition fieldDefinition = context.getFieldDefinition(classDefinition, "createdAt");
+        if (fieldDefinition == null) {
+            return null;
+        }
+        return ((DefaultPortableReader) reader).read("createdAt");
     }
 
 
     public static void main(String[] args) throws IOException {
-//        PortableQueryLatency portableQueryLatency = new PortableQueryLatency();
-//        portableQueryLatency.prepare();
-//        System.out.println(portableQueryLatency.testQuery());
+        PortableQueryLatency portableQueryLatency = new PortableQueryLatency();
+        portableQueryLatency.prepare();
+        System.out.println(portableQueryLatency.testQueryUser_location_city());
+        System.out.println(portableQueryLatency.testQueryCreatedAt());
         test();
     }
 

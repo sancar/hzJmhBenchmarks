@@ -74,34 +74,9 @@ public class AvroQueryLatency {
         return outputStream.toByteArray();
     }
 
-    Schema schema = SchemaBuilder
-            .record("TweetObject")
-            .fields()
-            .name("createdAt").type().optional().stringType()
-            .name("idStr").type().optional().stringType()
-            .name("text").type().optional().stringType()
-            .name("user").type().optional()
-            .record("userRecord")
-            .fields()
-            .name("description").type().optional().stringType()
-            .name("id").type().optional().intType()
-            .name("location").type().optional()
-            .record("location")
-            .fields()
-            .name("city").type().optional().stringType()
-            .name("country").type().optional().stringType()
-            .endRecord()
-            .name("name").type().optional().stringType()
-            .name("screenName").type().optional().stringType()
-            .name("url").type().optional().stringType()
-            .endRecord()
-            .endRecord();
-    ;
+    Schema schema;
     byte[] data;
-
-    //Creating the partial schema once here, but in reality this will be different for each query
-    //This performance test assumes we are caching the schema for each query
-    Schema partialSchema = SchemaBuilder
+    Schema partialSchemaForUser_Location_city = SchemaBuilder
             .record("TweetObject")
             .fields()
             .name("user").type().optional()
@@ -115,9 +90,37 @@ public class AvroQueryLatency {
             .endRecord()
             .endRecord();
 
+    Schema partialSchemaForCreatedAt = SchemaBuilder
+            .record("TweetObject")
+            .fields()
+            .name("createdAt").type().optional().stringType()
+            .endRecord();
+
     @Setup
     public void prepare() throws IOException {
         MetadataCreator metadataCreator = new MetadataCreator();
+        schema = SchemaBuilder
+                .record("TweetObject")
+                .fields()
+                .name("createdAt").type().optional().stringType()
+                .name("idStr").type().optional().stringType()
+                .name("text").type().optional().stringType()
+                .name("user").type().optional()
+                .record("userRecord")
+                .fields()
+                .name("description").type().optional().stringType()
+                .name("id").type().optional().intType()
+                .name("location").type().optional()
+                .record("location")
+                .fields()
+                .name("city").type().optional().stringType()
+                .name("country").type().optional().stringType()
+                .endRecord()
+                .name("name").type().optional().stringType()
+                .name("screenName").type().optional().stringType()
+                .name("url").type().optional().stringType()
+                .endRecord()
+                .endRecord();
 
         GenericRecord root = new GenericData.Record(schema);
         root.put("createdAt", metadataCreator.getCreatedAt());
@@ -146,18 +149,25 @@ public class AvroQueryLatency {
 
 
     @Benchmark
-    public Object testQuery() throws IOException {
-        GenericRecord tweetObject = toObject(schema, partialSchema, data);
+    public Object testQueryUser_location_city() throws IOException {
+        GenericRecord tweetObject = toObject(schema, partialSchemaForUser_Location_city, data);
         GenericRecord user = (GenericRecord) tweetObject.get("user");
         GenericRecord location = (GenericRecord) user.get("location");
         return location.get("city");
     }
 
+    @Benchmark
+    public Object testQueryCreatedAt() throws IOException {
+        GenericRecord tweetObject = toObject(schema, partialSchemaForCreatedAt, data);
+        return tweetObject.get("createdAt");
+    }
+
     public static void main(String[] args) throws IOException {
+        AvroQueryLatency avroQueryLatency = new AvroQueryLatency();
+        avroQueryLatency.prepare();
+        System.out.println(avroQueryLatency.testQueryUser_location_city());
+        System.out.println(avroQueryLatency.testQueryCreatedAt());
         test();
-//        AvroQueryLatency avroQueryLatency = new AvroQueryLatency();
-//        avroQueryLatency.prepare();
-//        System.out.println(avroQueryLatency.testQuery());
     }
 
     private static void test() {

@@ -77,7 +77,7 @@ public class AvroQueryThpt {
 
     Schema schema;
     byte[] data;
-    Schema partialSchema = SchemaBuilder
+    Schema partialSchemaForUser_Location_city = SchemaBuilder
             .record("TweetObject")
             .fields()
             .name("user").type().optional()
@@ -90,6 +90,13 @@ public class AvroQueryThpt {
             .endRecord()
             .endRecord()
             .endRecord();
+
+    Schema partialSchemaForCreatedAt = SchemaBuilder
+            .record("TweetObject")
+            .fields()
+            .name("createdAt").type().optional().stringType()
+            .endRecord();
+
     @Setup
     public void prepare() throws IOException {
         MetadataCreator metadataCreator = new MetadataCreator();
@@ -143,14 +150,28 @@ public class AvroQueryThpt {
 
 
     @Benchmark
-    public Object testQuery() throws IOException {
-        GenericRecord tweetObject = toObject(schema, partialSchema, data);
+    public Object testQueryUser_location_city() throws IOException {
+        GenericRecord tweetObject = toObject(schema, partialSchemaForUser_Location_city, data);
         GenericRecord user = (GenericRecord) tweetObject.get("user");
         GenericRecord location = (GenericRecord) user.get("location");
         return location.get("city");
     }
 
-    public static void main(String[] args) {
+    @Benchmark
+    public Object testQueryCreatedAt() throws IOException {
+        GenericRecord tweetObject = toObject(schema, partialSchemaForCreatedAt, data);
+        return tweetObject.get("createdAt");
+    }
+
+    public static void main(String[] args) throws IOException {
+        AvroQueryThpt avroQueryThpt = new AvroQueryThpt();
+        avroQueryThpt.prepare();
+        System.out.println(avroQueryThpt.testQueryUser_location_city());
+        System.out.println(avroQueryThpt.testQueryCreatedAt());
+        test();
+    }
+
+    private static void test() {
         Options opt = new OptionsBuilder()
                 .include(AvroQueryThpt.class.getSimpleName())
                 .forks(1)
