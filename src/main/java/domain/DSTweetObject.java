@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2016, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,48 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package protocol;
+package domain;
 
 import com.hazelcast.nio.ObjectDataInput;
 import com.hazelcast.nio.ObjectDataOutput;
-import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
+import com.hazelcast.nio.serialization.DataSerializable;
 
 import java.io.IOException;
-import java.io.Serializable;
 
-public class Employee implements IdentifiedDataSerializable, Serializable {
-    private String name;
-    private String surname;
-    private long age;
+public class DSTweetObject extends AbstractTweetObject implements DataSerializable {
 
-    public Employee() {
-    }
-
-
-    public Employee(String name, String surname, long age) {
-        this.name = name;
-        this.surname = surname;
-        this.age = age;
-    }
-
-    public int getFactoryId() {
-        return 1;
-    }
-
-    public int getId() {
-        return 1;
-    }
-
+    @Override
     public void writeData(ObjectDataOutput out) throws IOException {
-        out.writeUTF(name);
-        out.writeUTF(surname);
-        out.writeLong(age);
+        out.writeUTF(createdAt);
+        out.writeUTF(idStr);
+        out.writeUTF(text);
+        out.writeObject(user);
     }
 
+    @Override
     public void readData(ObjectDataInput in) throws IOException {
-        name = in.readUTF();
-        surname = in.readUTF();
-        age = in.readLong();
+        createdAt = in.readUTF();
+        idStr = in.readUTF();
+        text = in.readUTF();
+        user = in.readObject();
     }
 }
