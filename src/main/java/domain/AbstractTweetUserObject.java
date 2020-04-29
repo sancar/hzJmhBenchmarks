@@ -1,6 +1,7 @@
 package domain;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class AbstractTweetUserObject implements TweetUserObject, Serializable {
 
@@ -79,11 +80,11 @@ public class AbstractTweetUserObject implements TweetUserObject, Serializable {
         AbstractTweetUserObject that = (AbstractTweetUserObject) o;
 
         if (id != that.id) return false;
-        if (name != null ? !name.equals(that.name) : that.name != null) return false;
-        if (screenName != null ? !screenName.equals(that.screenName) : that.screenName != null) return false;
-        if (location != null ? !location.equals(that.location) : that.location != null) return false;
-        if (url != null ? !url.equals(that.url) : that.url != null) return false;
-        return description != null ? description.equals(that.description) : that.description == null;
+        if (!Objects.equals(name, that.name)) return false;
+        if (!Objects.equals(screenName, that.screenName)) return false;
+        if (!Objects.equals(location, that.location)) return false;
+        if (!Objects.equals(url, that.url)) return false;
+        return Objects.equals(description, that.description);
     }
 
     @Override

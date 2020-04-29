@@ -16,8 +16,9 @@
 package domain;
 
 import java.io.Serializable;
+import java.util.Objects;
 
-abstract class AbstractTweetObject implements TweetObject, Serializable {
+public abstract class AbstractTweetObject implements TweetObject, Serializable {
 
     protected String createdAt;
     protected String idStr;
@@ -71,10 +72,10 @@ abstract class AbstractTweetObject implements TweetObject, Serializable {
 
         AbstractTweetObject that = (AbstractTweetObject) o;
 
-        if (createdAt != null ? !createdAt.equals(that.createdAt) : that.createdAt != null) return false;
-        if (idStr != null ? !idStr.equals(that.idStr) : that.idStr != null) return false;
-        if (text != null ? !text.equals(that.text) : that.text != null) return false;
-        return user != null ? user.equals(that.user) : that.user == null;
+        if (!Objects.equals(createdAt, that.createdAt)) return false;
+        if (!Objects.equals(idStr, that.idStr)) return false;
+        if (!Objects.equals(text, that.text)) return false;
+        return Objects.equals(user, that.user);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package domain;
 
 import java.io.Serializable;
+import java.util.Objects;
 
 public class AbstractTweetLocationObject implements TweetLocationObject, Serializable {
 
@@ -34,8 +35,8 @@ public class AbstractTweetLocationObject implements TweetLocationObject, Seriali
 
         AbstractTweetLocationObject that = (AbstractTweetLocationObject) o;
 
-        if (country != null ? !country.equals(that.country) : that.country != null) return false;
-        return city != null ? city.equals(that.city) : that.city == null;
+        if (!Objects.equals(country, that.country)) return false;
+        return Objects.equals(city, that.city);
     }
 
     @Override

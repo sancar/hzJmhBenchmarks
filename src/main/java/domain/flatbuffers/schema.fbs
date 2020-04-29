@@ -1,0 +1,27 @@
+// example IDL file
+
+namespace domain.flatbuffers;
+
+
+table TweetObject {
+  createdAt:string;
+  id:string;
+  text:string;
+  user:User;
+}
+
+table User {
+  destription:string;
+  id:uint;
+  location:Location;
+  name:string;
+  screenName:string;
+  url:string;
+}
+
+table Location {
+  city:string;
+  country:string;
+}
+
+root_type TweetObject;

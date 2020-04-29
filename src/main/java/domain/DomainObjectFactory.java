@@ -15,6 +15,19 @@
  */
 package domain;
 
+import domain.dataserializable.DSTweetLocationObject;
+import domain.dataserializable.DSTweetObject;
+import domain.dataserializable.DSTweetUserObject;
+import domain.identified.IDSTweetLocationObject;
+import domain.identified.IDSTweetObject;
+import domain.identified.IDSTweetUserObject;
+import domain.portable.PortableTweetLocationObject;
+import domain.portable.PortableTweetObject;
+import domain.portable.PortableTweetUserObject;
+import domain.serializable.SerializableTweetLocationObject;
+import domain.serializable.SerializableTweetObject;
+import domain.serializable.SerializableTweetUserObject;
+
 public final class DomainObjectFactory {
 
     public enum Strategy {
