@@ -57,16 +57,19 @@ public class CapnProtoQueryThpt {
     private static org.capnproto.MessageReader toObject(byte[] data) throws IOException {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         ReadableByteChannel readableByteChannel = Channels.newChannel(byteArrayInputStream);
-        return org.capnproto.SerializePacked.readFromUnbuffered(readableByteChannel);
+//        return org.capnproto.SerializePacked.readFromUnbuffered(readableByteChannel);
+        return org.capnproto.Serialize.read(readableByteChannel);
     }
 
     private static byte[] toData(org.capnproto.MessageBuilder message) throws IOException {
         ByteArrayOutputStream buff = new ByteArrayOutputStream();
         WritableByteChannel wbc = Channels.newChannel(buff);
 
-        org.capnproto.SerializePacked.writeToUnbuffered(wbc, message);
+//        org.capnproto.SerializePacked.writeToUnbuffered(wbc, message);
+        org.capnproto.Serialize.write(wbc, message);
         return buff.toByteArray();
     }
+
 
 
     @Setup

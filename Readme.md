@@ -19,7 +19,8 @@ JSON representation of actual data.
  
  # Data Sizes
  Json 388
- CapnProto 310
+ CapnProto(packed) 310
+ CapnProto 408
  Avro 270
  Portable 525
  FlatBuffers 408
@@ -27,13 +28,17 @@ JSON representation of actual data.
  
 # Query Latency Results
  
-Benchmark                                          Mode  Cnt  Score   Error  Units
+Benchmark(Packed)                                  Mode  Cnt  Score   Error  Units
 CapnProtoQueryLatency.testQueryCreatedAt           avgt    5  3.195 ± 0.064  us/op
 CapnProtoQueryLatency.testQueryUser_location_city  avgt    5  3.238 ± 0.165  us/op
 
 Benchmark                                     Mode  Cnt  Score   Error  Units
 AvroQueryLatency.testQueryCreatedAt           avgt    5  1.554 ± 0.058  us/op
 AvroQueryLatency.testQueryUser_location_city  avgt    5  1.732 ± 0.049  us/op
+
+Benchmark                                          Mode  Cnt  Score   Error  Units
+CapnProtoQueryLatency.testQueryCreatedAt           avgt    5  0.471 ± 0.007  us/op
+CapnProtoQueryLatency.testQueryUser_location_city  avgt    5  0.472 ± 0.010  us/op
 
 Benchmark                                         Mode  Cnt  Score   Error  Units
 PortableQueryLatency.testQueryCreatedAt           avgt    5  0.170 ± 0.003  us/op
@@ -45,13 +50,17 @@ FlatBuffersQueryLatency.testQueryUser_location_city  avgt    5  0.105 ± 0.002  
 
 # Query Throughput Results
 
-Benchmark                                        Mode  Cnt       Score       Error  Units
+Benchmark(Packed)                               Mode  Cnt       Score       Error  Units
 CapnProtoQueryThpt.testQueryCreatedAt           thrpt    5  324,495.281 ±  4416.239  ops/s
 CapnProtoQueryThpt.testQueryUser_location_city  thrpt    5  321,969.504 ± 14983.215  ops/s
 
 Benchmark                                   Mode  Cnt       Score       Error  Units
 AvroQueryThpt.testQueryCreatedAt           thrpt    5  666,914.577 ±  5668.769  ops/s
 AvroQueryThpt.testQueryUser_location_city  thrpt    5  593,631.194 ± 10121.795  ops/s
+
+Benchmark                                        Mode  Cnt        Score       Error  Units
+CapnProtoQueryThpt.testQueryCreatedAt           thrpt    5  2,268,551.299 ± 49593.543  ops/s
+CapnProtoQueryThpt.testQueryUser_location_city  thrpt    5  2,171,765.108 ± 33404.552  ops/s
 
 Benchmark                                       Mode  Cnt        Score        Error  Units
 PortableQueryThpt.testQueryCreatedAt           thrpt    5  5,595,587.266 ± 106659.600  ops/s
@@ -63,21 +72,25 @@ FlatBuffersQueryThpt.testQueryUser_location_city  thrpt    5   9,903,232.534 ± 
 
 # Serialize Deserialize Latency Results
 
-Benchmark                                      Mode  Cnt  Score   Error  Units
-ProtoSerializeDeserializeLatency.testToData    avgt    5  0.340 ± 0.009  us/op
-ProtoSerializeDeserializeLatency.testToObject  avgt    5  0.350 ± 0.006  us/op
+Benchmark                                     Mode  Cnt  Score   Error  Units
+AvroSerializeDeserializeLatency.testToData    avgt    5  3.141 ± 0.054  us/op
+AvroSerializeDeserializeLatency.testToObject  avgt    5  2.231 ± 0.023  us/op
+
+Benchmark(Packed)                                  Mode  Cnt  Score   Error  Units
+CapnProtoSerializeDeserializeLatency.testToData    avgt    5  2.552 ± 0.056  us/op
+CapnProtoSerializeDeserializeLatency.testToObject  avgt    5  3.453 ± 2.940  us/op
 
 Benchmark                                         Mode  Cnt  Score   Error  Units
 PortableSerializeDeserializeLatency.testToData    avgt    5  1.766 ± 0.049  us/op
 PortableSerializeDeserializeLatency.testToObject  avgt    5  1.463 ± 0.039  us/op
 
-Benchmark                                     Mode  Cnt  Score   Error  Units
-AvroSerializeDeserializeLatency.testToData    avgt    5  3.141 ± 0.054  us/op
-AvroSerializeDeserializeLatency.testToObject  avgt    5  2.231 ± 0.023  us/op
-
 Benchmark                                          Mode  Cnt  Score   Error  Units
-CapnProtoSerializeDeserializeLatency.testToData    avgt    5  2.552 ± 0.056  us/op
-CapnProtoSerializeDeserializeLatency.testToObject  avgt    5  3.453 ± 2.940  us/op
+CapnProtoSerializeDeserializeLatency.testToData    avgt    5  0.397 ± 0.004  us/op
+CapnProtoSerializeDeserializeLatency.testToObject  avgt    5  0.374 ± 0.011  us/op
+
+Benchmark                                      Mode  Cnt  Score   Error  Units
+ProtoSerializeDeserializeLatency.testToData    avgt    5  0.340 ± 0.009  us/op
+ProtoSerializeDeserializeLatency.testToObject  avgt    5  0.350 ± 0.006  us/op
 
 Benchmark                                            Mode  Cnt  Score    Error  Units
 FlatBuffersSerializeDeserializeLatency.testToData    avgt    5  0.866 ±  0.012  us/op
