@@ -38,6 +38,7 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 
 
@@ -48,26 +49,29 @@ import java.util.concurrent.TimeUnit;
 @Measurement(iterations = 5)
 public class FlatBuffersSerializeDeserializeLatency {
 
+    static MetadataCreator metadataCreator = new MetadataCreator();
 
     private static TweetObject toObject(byte[] data) throws IOException {
-        java.nio.ByteBuffer buf = java.nio.ByteBuffer.wrap(data);
-// Get an accessor to the root object inside the buffer.
+        ByteBuffer buf = ByteBuffer.wrap(data);
         return TweetObject.getRootAsTweetObject(buf);
     }
 
-    private static byte[] toData(FlatBufferBuilder message) throws IOException {
-//        message.dataBuffer();
+    private static ByteBuffer toByteBuffer(FlatBufferBuilder message) throws IOException {
+        return message.dataBuffer();
+    }
+
+    private static byte[] toByteArray(FlatBufferBuilder message) throws IOException {
         return message.sizedByteArray();
     }
+
 
     byte[] data;
     FlatBufferBuilder tweetObject;
 
     @Setup
     public void prepare() throws IOException {
-        MetadataCreator metadataCreator = new MetadataCreator();
         tweetObject = FlatBuffersSampleFactory.create(metadataCreator);
-        data = toData(tweetObject);
+        data = toByteArray(tweetObject);
 
     }
 
@@ -76,8 +80,9 @@ public class FlatBuffersSerializeDeserializeLatency {
     }
 
     @Benchmark
-    public byte[] testToData() throws IOException {
-        return toData(tweetObject);
+    public ByteBuffer testToData() throws IOException {
+        FlatBufferBuilder tweetObject = FlatBuffersSampleFactory.create(metadataCreator);
+        return toByteBuffer(tweetObject);
     }
 
     @Benchmark
@@ -89,7 +94,7 @@ public class FlatBuffersSerializeDeserializeLatency {
     public static void main(String[] args) throws IOException {
         FlatBuffersSerializeDeserializeLatency test = new FlatBuffersSerializeDeserializeLatency();
         test.prepare();
-        System.out.println("data length " + test.testToData().length);
+        System.out.println("data length " + FlatBuffersSampleFactory.create(metadataCreator).sizedByteArray().length);
         TweetObject tweetObject = test.testToObject();
         System.out.println(tweetObject.createdAt());
         System.out.println(tweetObject.id());
@@ -104,7 +109,7 @@ public class FlatBuffersSerializeDeserializeLatency {
         Location location = user.location();
         System.out.println(location.city());
         System.out.println(location.country());
-//        test();
+        test();
     }
 
     private static void test() {

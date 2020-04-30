@@ -1,10 +1,5 @@
 package domain;
 
-import java.util.Date;
-
-import static org.apache.commons.lang3.RandomStringUtils.randomAlphanumeric;
-import static org.apache.commons.lang3.RandomUtils.nextLong;
-
 public class MetadataCreator {
 
     private static final String[] COUNTRIES = new String[]{
@@ -19,15 +14,15 @@ public class MetadataCreator {
 //    private Random random = new Random();
 
     public String getCreatedAt() {
-        return new Date(nextLong(1 << 12, 1L << 41)).toString();
+        return "Wed Feb 05 19:19:31 EET 1975";
     }
 
     public String getIdStr() {
-        return "" + 1;
+        return "1";
     }
 
     public String getText() {
-        return randomAlphanumeric(130);
+        return "glHO4lyBwBHDu4IjVDcLqrWYbSSjXzZL3kyDXMRwhZzI7zrFwqpBKeuPVapSU7xTIOwmV3zLlUPOgG11uYxNPPeWVCasGHTN43EH9iSkzmr0WRbcaE0Xwmo0f6IWcb1jjk";
     }
 
     public int getId() {
@@ -35,11 +30,11 @@ public class MetadataCreator {
     }
 
     public String getName() {
-        return randomAlphanumeric(6);
+        return "qZtfxB";
     }
 
     public String getScreenName() {
-        return randomAlphanumeric(8);
+        return "VTFBKYtK";
     }
 
     public String getCountry() {
@@ -51,10 +46,10 @@ public class MetadataCreator {
     }
 
     public String getUrl() {
-        return "www." + randomAlphanumeric(8) + ".com";
+        return "www.LPfz3XJF.com";
     }
 
     public String getDescription() {
-        return randomAlphanumeric(50);
+        return "A05Jq62csVz8ofjkEv86leDEC4SNjtjnD46S56qlZJ0DF5S0DG";
     }
 }

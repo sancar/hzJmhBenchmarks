@@ -1,0 +1,25 @@
+syntax = "proto2";
+
+option java_package = "domain.proto";
+option java_outer_classname = "ProtoTweetObject";
+message TweetObject {
+  required string createdEt = 1;
+  required string id = 2;
+  required string text = 3;
+  required User user = 4;
+}
+
+message User{
+  required string description = 1;
+  required int32 id = 2;
+  required Location location = 3;
+  required string name = 4;
+  required string screenName = 5;
+  required string url = 6;
+}
+
+message Location{
+  required string city = 1;
+  required string country = 2;
+}
+
