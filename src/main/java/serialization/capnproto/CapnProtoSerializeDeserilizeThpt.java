@@ -30,6 +30,7 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -47,21 +48,23 @@ import java.util.concurrent.TimeUnit;
 @BenchmarkMode(Mode.Throughput)
 @State(Scope.Thread)
 @OutputTimeUnit(TimeUnit.SECONDS)
-@Warmup(iterations = 10)
-@Measurement(iterations = 5)
+@Warmup(iterations = 10, time = 1)
+@Measurement(iterations = 5, time = 1)
 public class CapnProtoSerializeDeserilizeThpt {
 
     private static org.capnproto.MessageReader toObject(byte[] data) throws IOException {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
         ReadableByteChannel readableByteChannel = Channels.newChannel(byteArrayInputStream);
-        return org.capnproto.SerializePacked.readFromUnbuffered(readableByteChannel);
+//        return org.capnproto.SerializePacked.readFromUnbuffered(readableByteChannel);
+        return org.capnproto.Serialize.read(readableByteChannel);
     }
 
     private static byte[] toData(org.capnproto.MessageBuilder message) throws IOException {
         ByteArrayOutputStream buff = new ByteArrayOutputStream();
         WritableByteChannel wbc = Channels.newChannel(buff);
 
-        org.capnproto.SerializePacked.writeToUnbuffered(wbc, message);
+//        org.capnproto.SerializePacked.writeToUnbuffered(wbc, message);
+        org.capnproto.Serialize.write(wbc, message);
         return buff.toByteArray();
     }
 
@@ -86,17 +89,31 @@ public class CapnProtoSerializeDeserilizeThpt {
     }
 
     @Benchmark
-    public org.capnproto.MessageReader testToObject() throws IOException {
-        return toObject(data);
-    }
+    public org.capnproto.MessageReader testToObject(Blackhole blackhole) throws IOException {
+        MessageReader messageReader = toObject(data);
+        CapTweetObject.TweetObject.Reader tweetObject = messageReader.getRoot(CapTweetObject.TweetObject.factory);
+        blackhole.consume(tweetObject.getCreatedAt());
+        blackhole.consume(tweetObject.getId());
+        blackhole.consume(tweetObject.getText());
+        CapTweetObject.User.Reader user = tweetObject.getUser();
+        blackhole.consume(user.getDescription());
+        blackhole.consume(user.getId());
+        blackhole.consume(user.getName());
+        blackhole.consume(user.getScreenName());
+        blackhole.consume(user.getUrl());
 
+        CapTweetObject.Location.Reader location = user.getLocation();
+        blackhole.consume(location.getCity());
+        blackhole.consume(location.getCountry());
+        return messageReader;
+    }
 
     public static void main(String[] args) throws IOException {
         CapnProtoSerializeDeserilizeThpt test = new CapnProtoSerializeDeserilizeThpt();
         test.prepare();
         System.out.println("data length " + test.testToData().length);
-        MessageReader message = test.testToObject();
-        CapTweetObject.TweetObject.Reader tweetObject = message.getRoot(CapTweetObject.TweetObject.factory);
+        MessageReader messageReader = toObject(test.data);
+        CapTweetObject.TweetObject.Reader tweetObject = messageReader.getRoot(CapTweetObject.TweetObject.factory);
         System.out.println(tweetObject.getCreatedAt());
         System.out.println(tweetObject.getId());
         System.out.println(tweetObject.getText());
@@ -110,7 +127,7 @@ public class CapnProtoSerializeDeserilizeThpt {
         CapTweetObject.Location.Reader location = user.getLocation();
         System.out.println(location.getCity());
         System.out.println(location.getCountry());
-//        test();
+        test();
     }
 
     private static void test() {

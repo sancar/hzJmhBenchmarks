@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2020, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-package serialization.portable;
+package serialization.flexbuffers;
 
-import com.hazelcast.internal.serialization.Data;
-import com.hazelcast.internal.serialization.InternalSerializationService;
-import com.hazelcast.internal.serialization.impl.DefaultSerializationServiceBuilder;
+import com.google.flatbuffers.FlatBufferBuilder;
 import domain.MetadataCreator;
-import domain.TweetObject;
-import domain.portable.PortableObjectFactory;
-import domain.portable.PortableSampleFactory;
+import domain.flatbuffers.FlatBuffersSampleFactory;
+import domain.flatbuffers.TweetObject;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Measurement;
@@ -42,22 +39,30 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 
-@BenchmarkMode(Mode.Throughput)
+@BenchmarkMode(Mode.AverageTime)
 @State(Scope.Thread)
-@OutputTimeUnit(TimeUnit.SECONDS)
+@OutputTimeUnit(TimeUnit.MICROSECONDS)
 @Warmup(iterations = 10, time = 1)
 @Measurement(iterations = 5, time = 1)
-public class PortableSerializeDeserilizeThpt {
+public class FlexBuffersQueryLatency {
 
-    static MetadataCreator metadataCreator = new MetadataCreator();
-    private InternalSerializationService serializationService;
-    private Data data;
+    private byte[] data;
+
+    private static TweetObject toObject(byte[] data) throws IOException {
+        java.nio.ByteBuffer buf = java.nio.ByteBuffer.wrap(data);
+        return TweetObject.getRootAsTweetObject(buf);
+    }
+
+    private static byte[] toData(FlatBufferBuilder message) throws IOException {
+//        message.dataBuffer();
+        return message.sizedByteArray();
+    }
 
     @Setup
-    public void prepare() {
-        serializationService = new DefaultSerializationServiceBuilder().addPortableFactory(PortableObjectFactory.FACTORY_ID, new PortableObjectFactory()).build();
-        TweetObject tweetObject = PortableSampleFactory.create(metadataCreator);
-        data = serializationService.toData(tweetObject);
+    public void prepare() throws IOException {
+        MetadataCreator metadataCreator = new MetadataCreator();
+        FlatBufferBuilder tweetObject = FlatBuffersSampleFactory.create(metadataCreator);
+        data = toData(tweetObject);
     }
 
     @TearDown
@@ -65,28 +70,30 @@ public class PortableSerializeDeserilizeThpt {
     }
 
     @Benchmark
-    public Data testToData() throws IOException {
-        TweetObject tweetObject = PortableSampleFactory.create(metadataCreator);
-        return serializationService.toData(tweetObject);
+    public Object testQueryUser_location_city() throws IOException {
+        TweetObject tweetObject = toObject(data);
+        return tweetObject.user().location().city();
     }
 
     @Benchmark
-    public TweetObject testToObject() throws IOException {
-        return serializationService.toObject(data);
+    public Object testQueryCreatedAt() throws IOException {
+        TweetObject tweetObject = toObject(data);
+        return tweetObject.createdAt();
     }
 
+
     public static void main(String[] args) throws IOException {
-        PortableSerializeDeserilizeThpt test = new PortableSerializeDeserilizeThpt();
-        test.prepare();
-        System.out.println("bytes " + test.testToData());
-        System.out.println("bytes.length " + test.testToData().toByteArray().length);
-        System.out.println(test.testToObject());
+        FlexBuffersQueryLatency flexBuffersQueryLatency = new FlexBuffersQueryLatency();
+        flexBuffersQueryLatency.prepare();
+        System.out.println("Data length " + flexBuffersQueryLatency.data.length);
+        System.out.println(flexBuffersQueryLatency.testQueryUser_location_city());
+        System.out.println(flexBuffersQueryLatency.testQueryCreatedAt());
         test();
     }
 
     private static void test() {
         Options opt = new OptionsBuilder()
-                .include(PortableSerializeDeserilizeThpt.class.getSimpleName())
+                .include(FlexBuffersQueryLatency.class.getSimpleName())
                 .forks(1)
                 .build();
 

@@ -19,11 +19,10 @@ package serialization.portable;
 import com.hazelcast.internal.serialization.Data;
 import com.hazelcast.internal.serialization.InternalSerializationService;
 import com.hazelcast.internal.serialization.impl.DefaultSerializationServiceBuilder;
-import domain.DomainObjectFactory;
 import domain.MetadataCreator;
-import domain.serializable.ObjectSampleFactory;
-import domain.portable.PortableObjectFactory;
 import domain.TweetObject;
+import domain.portable.PortableObjectFactory;
+import domain.portable.PortableSampleFactory;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Measurement;
@@ -39,28 +38,24 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 
 @BenchmarkMode(Mode.AverageTime)
 @State(Scope.Thread)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-@Warmup(iterations = 10)
-@Measurement(iterations = 5)
+@Warmup(iterations = 10, time = 1)
+@Measurement(iterations = 5, time = 1)
 public class PortableSerializeDeserializeLatency {
 
+    static MetadataCreator metadataCreator = new MetadataCreator();
     private InternalSerializationService serializationService;
     private Data data;
-    private TweetObject tweetObject;
 
     @Setup
     public void prepare() {
         serializationService = new DefaultSerializationServiceBuilder().addPortableFactory(PortableObjectFactory.FACTORY_ID, new PortableObjectFactory()).build();
-        MetadataCreator metadataCreator = new MetadataCreator();
-        DomainObjectFactory objectFactory = DomainObjectFactory.newFactory(DomainObjectFactory.Strategy.PORTABLE);
-        ObjectSampleFactory factory = new ObjectSampleFactory(objectFactory, metadataCreator);
-        tweetObject = factory.create();
+        TweetObject tweetObject = PortableSampleFactory.create(metadataCreator);
         data = serializationService.toData(tweetObject);
     }
 
@@ -69,19 +64,20 @@ public class PortableSerializeDeserializeLatency {
     }
 
     @Benchmark
-    public Object testToData() throws IOException {
+    public Data testToData() {
+        TweetObject tweetObject = PortableSampleFactory.create(metadataCreator);
         return serializationService.toData(tweetObject);
     }
 
     @Benchmark
-    public Object testToObject() throws IOException {
+    public TweetObject testToObject() {
         return serializationService.toObject(data);
     }
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) {
         PortableSerializeDeserializeLatency test = new PortableSerializeDeserializeLatency();
         test.prepare();
-        System.out.println(test.testToData());
+        System.out.println("Data Length : " + test.testToData().toByteArray().length);
         System.out.println(test.testToObject());
         test();
     }

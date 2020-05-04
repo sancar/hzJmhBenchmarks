@@ -32,6 +32,7 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -45,8 +46,8 @@ import java.util.concurrent.TimeUnit;
 @BenchmarkMode(Mode.AverageTime)
 @State(Scope.Thread)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-@Warmup(iterations = 10)
-@Measurement(iterations = 5)
+@Warmup(iterations = 10, time = 1)
+@Measurement(iterations = 5, time = 1)
 public class FlatBuffersSerializeDeserializeLatency {
 
     static MetadataCreator metadataCreator = new MetadataCreator();
@@ -86,8 +87,20 @@ public class FlatBuffersSerializeDeserializeLatency {
     }
 
     @Benchmark
-    public TweetObject testToObject() throws IOException {
-        return toObject(data);
+    public TweetObject testToObject(Blackhole blackhole) throws IOException {
+        TweetObject tweetObject = TweetObject.getRootAsTweetObject(ByteBuffer.wrap(data));
+        blackhole.consume(tweetObject.createdAt());
+        blackhole.consume(tweetObject.id());
+        blackhole.consume(tweetObject.text());
+        User user = tweetObject.user();
+        blackhole.consume(user.destription());
+        blackhole.consume(user.id());
+        Location location = user.location();
+        blackhole.consume(location.city());
+        blackhole.consume(location.country());
+        blackhole.consume(user.name());
+        blackhole.consume(user.screenName());
+        return tweetObject;
     }
 
 
@@ -95,7 +108,7 @@ public class FlatBuffersSerializeDeserializeLatency {
         FlatBuffersSerializeDeserializeLatency test = new FlatBuffersSerializeDeserializeLatency();
         test.prepare();
         System.out.println("data length " + FlatBuffersSampleFactory.create(metadataCreator).sizedByteArray().length);
-        TweetObject tweetObject = test.testToObject();
+        TweetObject tweetObject = toObject(test.data);
         System.out.println(tweetObject.createdAt());
         System.out.println(tweetObject.id());
         System.out.println(tweetObject.text());

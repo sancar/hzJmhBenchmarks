@@ -48,8 +48,8 @@ import java.util.concurrent.TimeUnit;
 @BenchmarkMode(Mode.Throughput)
 @State(Scope.Thread)
 @OutputTimeUnit(TimeUnit.SECONDS)
-@Warmup(iterations = 10)
-@Measurement(iterations = 5)
+@Warmup(iterations = 10, time = 1)
+@Measurement(iterations = 5, time = 1)
 public class CapnProtoQueryThpt {
 
     byte[] data;

@@ -30,6 +30,7 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
@@ -47,9 +48,11 @@ import java.util.concurrent.TimeUnit;
 @BenchmarkMode(Mode.AverageTime)
 @State(Scope.Thread)
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
-@Warmup(iterations = 10)
-@Measurement(iterations = 5)
+@Warmup(iterations = 10, time = 1)
+@Measurement(iterations = 5, time = 1)
 public class CapnProtoSerializeDeserializeLatency {
+
+    static MetadataCreator metadataCreator = new MetadataCreator();
 
     private static org.capnproto.MessageReader toObject(byte[] data) throws IOException {
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
@@ -68,14 +71,10 @@ public class CapnProtoSerializeDeserializeLatency {
     }
 
     byte[] data;
-    org.capnproto.MessageBuilder tweetObject;
 
     @Setup
     public void prepare() throws IOException {
-        MetadataCreator metadataCreator = new MetadataCreator();
-        tweetObject = CapSampleFactory.create(metadataCreator);
-        data = toData(tweetObject);
-
+        data = toData(CapSampleFactory.create(metadataCreator));
     }
 
     @TearDown
@@ -84,12 +83,28 @@ public class CapnProtoSerializeDeserializeLatency {
 
     @Benchmark
     public byte[] testToData() throws IOException {
+        org.capnproto.MessageBuilder tweetObject = CapSampleFactory.create(metadataCreator);
         return toData(tweetObject);
     }
 
     @Benchmark
-    public org.capnproto.MessageReader testToObject() throws IOException {
-        return toObject(data);
+    public org.capnproto.MessageReader testToObject(Blackhole blackhole) throws IOException {
+        MessageReader messageReader = toObject(data);
+        CapTweetObject.TweetObject.Reader tweetObject = messageReader.getRoot(CapTweetObject.TweetObject.factory);
+        blackhole.consume(tweetObject.getCreatedAt());
+        blackhole.consume(tweetObject.getId());
+        blackhole.consume(tweetObject.getText());
+        CapTweetObject.User.Reader user = tweetObject.getUser();
+        blackhole.consume(user.getDescription());
+        blackhole.consume(user.getId());
+        blackhole.consume(user.getName());
+        blackhole.consume(user.getScreenName());
+        blackhole.consume(user.getUrl());
+
+        CapTweetObject.Location.Reader location = user.getLocation();
+        blackhole.consume(location.getCity());
+        blackhole.consume(location.getCountry());
+        return messageReader;
     }
 
 
@@ -97,8 +112,8 @@ public class CapnProtoSerializeDeserializeLatency {
         CapnProtoSerializeDeserializeLatency test = new CapnProtoSerializeDeserializeLatency();
         test.prepare();
         System.out.println("data length " + test.testToData().length);
-        MessageReader message = test.testToObject();
-        CapTweetObject.TweetObject.Reader tweetObject = message.getRoot(CapTweetObject.TweetObject.factory);
+        MessageReader messageReader = toObject(test.data);
+        CapTweetObject.TweetObject.Reader tweetObject = messageReader.getRoot(CapTweetObject.TweetObject.factory);
         System.out.println(tweetObject.getCreatedAt());
         System.out.println(tweetObject.getId());
         System.out.println(tweetObject.getText());

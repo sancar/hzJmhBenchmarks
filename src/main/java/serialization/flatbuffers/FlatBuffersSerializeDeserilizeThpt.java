@@ -32,41 +32,47 @@ import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.TearDown;
 import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.infra.Blackhole;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 
 
 @BenchmarkMode(Mode.Throughput)
 @State(Scope.Thread)
 @OutputTimeUnit(TimeUnit.SECONDS)
-@Warmup(iterations = 10)
-@Measurement(iterations = 5)
+@Warmup(iterations = 10, time = 1)
+@Measurement(iterations = 5, time = 1)
 public class FlatBuffersSerializeDeserilizeThpt {
 
+    static MetadataCreator metadataCreator = new MetadataCreator();
+
     private static TweetObject toObject(byte[] data) throws IOException {
-        java.nio.ByteBuffer buf = java.nio.ByteBuffer.wrap(data);
-// Get an accessor to the root object inside the buffer.
+        ByteBuffer buf = ByteBuffer.wrap(data);
         return TweetObject.getRootAsTweetObject(buf);
     }
 
-    private static byte[] toData(FlatBufferBuilder message) throws IOException {
-//        message.dataBuffer();
+    private static ByteBuffer toByteBuffer(FlatBufferBuilder message) throws IOException {
+        return message.dataBuffer();
+    }
+
+    private static byte[] toByteArray(FlatBufferBuilder message) throws IOException {
         return message.sizedByteArray();
     }
+
 
     byte[] data;
     FlatBufferBuilder tweetObject;
 
     @Setup
     public void prepare() throws IOException {
-        MetadataCreator metadataCreator = new MetadataCreator();
         tweetObject = FlatBuffersSampleFactory.create(metadataCreator);
-        data = toData(tweetObject);
+        data = toByteArray(tweetObject);
 
     }
 
@@ -75,21 +81,34 @@ public class FlatBuffersSerializeDeserilizeThpt {
     }
 
     @Benchmark
-    public byte[] testToData() throws IOException {
-        return toData(tweetObject);
+    public ByteBuffer testToData() throws IOException {
+        FlatBufferBuilder tweetObject = FlatBuffersSampleFactory.create(metadataCreator);
+        return toByteBuffer(tweetObject);
     }
 
     @Benchmark
-    public TweetObject testToObject() throws IOException {
-        return toObject(data);
+    public TweetObject testToObject(Blackhole blackhole) throws IOException {
+        TweetObject tweetObject = TweetObject.getRootAsTweetObject(ByteBuffer.wrap(data));
+        blackhole.consume(tweetObject.createdAt());
+        blackhole.consume(tweetObject.id());
+        blackhole.consume(tweetObject.text());
+        User user = tweetObject.user();
+        blackhole.consume(user.destription());
+        blackhole.consume(user.id());
+        Location location = user.location();
+        blackhole.consume(location.city());
+        blackhole.consume(location.country());
+        blackhole.consume(user.name());
+        blackhole.consume(user.screenName());
+        return tweetObject;
     }
 
 
     public static void main(String[] args) throws IOException {
         FlatBuffersSerializeDeserilizeThpt test = new FlatBuffersSerializeDeserilizeThpt();
         test.prepare();
-        System.out.println("data length " + test.testToData().length);
-        TweetObject tweetObject = test.testToObject();
+        System.out.println("data length " + FlatBuffersSampleFactory.create(metadataCreator).sizedByteArray().length);
+        TweetObject tweetObject = toObject(test.data);
         System.out.println(tweetObject.createdAt());
         System.out.println(tweetObject.id());
         System.out.println(tweetObject.text());
@@ -103,8 +122,7 @@ public class FlatBuffersSerializeDeserilizeThpt {
         Location location = user.location();
         System.out.println(location.city());
         System.out.println(location.country());
-//        test();
-//        test();
+        test();
     }
 
     private static void test() {

@@ -81,17 +81,21 @@ CapnProtoSerializeDeserializeLatency.testToData    avgt    5  2.552 ± 0.056  us
 CapnProtoSerializeDeserializeLatency.testToObject  avgt    5  3.453 ± 2.940  us/op
 
 Benchmark                                         Mode  Cnt  Score   Error  Units
-PortableSerializeDeserializeLatency.testToData    avgt    5  1.766 ± 0.049  us/op
-PortableSerializeDeserializeLatency.testToObject  avgt    5  1.463 ± 0.039  us/op
+PortableSerializeDeserializeLatency.testToData    avgt    5  1.782 ± 0.070  us/op
+PortableSerializeDeserializeLatency.testToObject  avgt    5  1.461 ± 0.021  us/op
+
+Benchmark                                            Mode  Cnt  Score   Error  Units
+FlexBuffersSerializeDeserializeLatency.testToData    avgt    5  1.526 ± 0.024  us/op
+FlexBuffersSerializeDeserializeLatency.testToObject  avgt    5  0.537 ± 0.008  us/op
 
 Benchmark                                          Mode  Cnt  Score   Error  Units
-CapnProtoSerializeDeserializeLatency.testToData    avgt    5  0.397 ± 0.004  us/op
-CapnProtoSerializeDeserializeLatency.testToObject  avgt    5  0.374 ± 0.011  us/op
+CapnProtoSerializeDeserializeLatency.testToData    avgt    5  2.162 ± 0.028  us/op
+CapnProtoSerializeDeserializeLatency.testToObject  avgt    5  0.593 ± 0.010  us/op
 
 Benchmark                                      Mode  Cnt  Score   Error  Units
 ProtoSerializeDeserializeLatency.testToData    avgt    5  0.340 ± 0.009  us/op
 ProtoSerializeDeserializeLatency.testToObject  avgt    5  0.350 ± 0.006  us/op
 
-Benchmark                                            Mode  Cnt  Score    Error  Units
-FlatBuffersSerializeDeserializeLatency.testToData    avgt    5  0.866 ±  0.012  us/op
-FlatBuffersSerializeDeserializeLatency.testToObject  avgt    5  0.035 ±  0.001  us/op
+Benchmark                                            Mode  Cnt  Score   Error  Units
+FlatBuffersSerializeDeserializeLatency.testToData    avgt    5  0.925 ± 0.051  us/op
+FlatBuffersSerializeDeserializeLatency.testToObject  avgt    5  0.545 ± 0.006  us/op 

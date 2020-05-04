@@ -21,11 +21,10 @@ import com.hazelcast.internal.serialization.InternalSerializationService;
 import com.hazelcast.internal.serialization.impl.DefaultPortableReader;
 import com.hazelcast.internal.serialization.impl.DefaultSerializationServiceBuilder;
 import com.hazelcast.nio.serialization.PortableReader;
-import domain.DomainObjectFactory;
 import domain.MetadataCreator;
 import domain.TweetObject;
 import domain.portable.PortableObjectFactory;
-import domain.serializable.ObjectSampleFactory;
+import domain.portable.PortableSampleFactory;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Measurement;
@@ -48,8 +47,8 @@ import java.util.concurrent.TimeUnit;
 @BenchmarkMode(Mode.Throughput)
 @State(Scope.Thread)
 @OutputTimeUnit(TimeUnit.SECONDS)
-@Warmup(iterations = 10)
-@Measurement(iterations = 5)
+@Warmup(iterations = 10, time = 1)
+@Measurement(iterations = 5, time = 1)
 public class PortableQueryThpt {
 
     private InternalSerializationService serializationService;
@@ -59,9 +58,7 @@ public class PortableQueryThpt {
     public void prepare() throws IOException {
         serializationService = new DefaultSerializationServiceBuilder().addPortableFactory(PortableObjectFactory.FACTORY_ID, new PortableObjectFactory()).build();
         MetadataCreator metadataCreator = new MetadataCreator();
-        DomainObjectFactory objectFactory = DomainObjectFactory.newFactory(DomainObjectFactory.Strategy.PORTABLE);
-        ObjectSampleFactory factory = new ObjectSampleFactory(objectFactory, metadataCreator);
-        TweetObject tweetObject = factory.create();
+        TweetObject tweetObject = PortableSampleFactory.create(metadataCreator);
         data = serializationService.toData(tweetObject);
     }
 
