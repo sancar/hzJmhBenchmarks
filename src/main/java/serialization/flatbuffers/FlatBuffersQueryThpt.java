@@ -36,6 +36,7 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 
 
@@ -46,23 +47,13 @@ import java.util.concurrent.TimeUnit;
 @Measurement(iterations = 5, time = 1)
 public class FlatBuffersQueryThpt {
 
-    private byte[] data;
-
-    private static domain.flatbuffers.TweetObject toObject(byte[] data) throws IOException {
-        java.nio.ByteBuffer buf = java.nio.ByteBuffer.wrap(data);
-        return TweetObject.getRootAsTweetObject(buf);
-    }
-
-    private static byte[] toData(FlatBufferBuilder message) throws IOException {
-//        message.dataBuffer();
-        return message.sizedByteArray();
-    }
+    ByteBuffer data;
 
     @Setup
     public void prepare() throws IOException {
         MetadataCreator metadataCreator = new MetadataCreator();
         FlatBufferBuilder tweetObject = FlatBuffersSampleFactory.create(metadataCreator);
-        data = toData(tweetObject);
+        data = tweetObject.dataBuffer();
     }
 
     @TearDown
@@ -71,13 +62,13 @@ public class FlatBuffersQueryThpt {
 
     @Benchmark
     public Object testQueryUser_location_city() throws IOException {
-        TweetObject tweetObject = toObject(data);
+        TweetObject tweetObject = TweetObject.getRootAsTweetObject(data);
         return tweetObject.user().location().city();
     }
 
     @Benchmark
     public Object testQueryCreatedAt() throws IOException {
-        TweetObject tweetObject = toObject(data);
+        TweetObject tweetObject = TweetObject.getRootAsTweetObject(data);
         return tweetObject.createdAt();
     }
 

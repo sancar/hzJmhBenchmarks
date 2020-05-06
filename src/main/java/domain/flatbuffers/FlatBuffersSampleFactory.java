@@ -45,8 +45,7 @@ public class FlatBuffersSampleFactory {
         TweetObject.addText(builder, text);
         TweetObject.addUser(builder, user);
         int root = TweetObject.endTweetObject(builder);
-
-        builder.finish(root); // You could also call `Monster.finishMonsterBuffer(builder, orc);`.
+        builder.finish(root);
         return builder;
 
 

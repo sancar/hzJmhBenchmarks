@@ -57,10 +57,6 @@ public class FlatBuffersSerializeDeserializeLatency {
         return TweetObject.getRootAsTweetObject(buf);
     }
 
-    private static ByteBuffer toByteBuffer(FlatBufferBuilder message) throws IOException {
-        return message.dataBuffer();
-    }
-
     private static byte[] toByteArray(FlatBufferBuilder message) throws IOException {
         return message.sizedByteArray();
     }
@@ -83,7 +79,7 @@ public class FlatBuffersSerializeDeserializeLatency {
     @Benchmark
     public ByteBuffer testToData() throws IOException {
         FlatBufferBuilder tweetObject = FlatBuffersSampleFactory.create(metadataCreator);
-        return toByteBuffer(tweetObject);
+        return tweetObject.dataBuffer();
     }
 
     @Benchmark

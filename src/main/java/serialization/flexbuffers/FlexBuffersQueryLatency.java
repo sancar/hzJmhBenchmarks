@@ -16,10 +16,9 @@
 
 package serialization.flexbuffers;
 
-import com.google.flatbuffers.FlatBufferBuilder;
+import com.google.flatbuffers.FlexBuffers;
 import domain.MetadataCreator;
-import domain.flatbuffers.FlatBuffersSampleFactory;
-import domain.flatbuffers.TweetObject;
+import domain.flexbuffers.FlexBuffersSampleFactory;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Measurement;
@@ -36,6 +35,7 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 
 
@@ -46,23 +46,13 @@ import java.util.concurrent.TimeUnit;
 @Measurement(iterations = 5, time = 1)
 public class FlexBuffersQueryLatency {
 
-    private byte[] data;
+    static MetadataCreator metadataCreator = new MetadataCreator();
 
-    private static TweetObject toObject(byte[] data) throws IOException {
-        java.nio.ByteBuffer buf = java.nio.ByteBuffer.wrap(data);
-        return TweetObject.getRootAsTweetObject(buf);
-    }
-
-    private static byte[] toData(FlatBufferBuilder message) throws IOException {
-//        message.dataBuffer();
-        return message.sizedByteArray();
-    }
+    ByteBuffer data;
 
     @Setup
-    public void prepare() throws IOException {
-        MetadataCreator metadataCreator = new MetadataCreator();
-        FlatBufferBuilder tweetObject = FlatBuffersSampleFactory.create(metadataCreator);
-        data = toData(tweetObject);
+    public void prepare() {
+        data = FlexBuffersSampleFactory.create(metadataCreator);
     }
 
     @TearDown
@@ -71,21 +61,21 @@ public class FlexBuffersQueryLatency {
 
     @Benchmark
     public Object testQueryUser_location_city() throws IOException {
-        TweetObject tweetObject = toObject(data);
-        return tweetObject.user().location().city();
+        FlexBuffers.Vector rootVector = FlexBuffers.getRoot(data).asVector();
+        FlexBuffers.Vector userVector = rootVector.get(3).asVector();
+        FlexBuffers.Vector locationVector = userVector.get(2).asVector();
+        return locationVector.get(0).asString();
     }
 
     @Benchmark
     public Object testQueryCreatedAt() throws IOException {
-        TweetObject tweetObject = toObject(data);
-        return tweetObject.createdAt();
+        FlexBuffers.Vector rootVector = FlexBuffers.getRoot(data).asVector();
+        return rootVector.get(0);
     }
-
 
     public static void main(String[] args) throws IOException {
         FlexBuffersQueryLatency flexBuffersQueryLatency = new FlexBuffersQueryLatency();
         flexBuffersQueryLatency.prepare();
-        System.out.println("Data length " + flexBuffersQueryLatency.data.length);
         System.out.println(flexBuffersQueryLatency.testQueryUser_location_city());
         System.out.println(flexBuffersQueryLatency.testQueryCreatedAt());
         test();

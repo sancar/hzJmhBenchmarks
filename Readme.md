@@ -45,8 +45,12 @@ PortableQueryLatency.testQueryCreatedAt           avgt    5  0.170 ± 0.003  us/
 PortableQueryLatency.testQueryUser_location_city  avgt    5  0.378 ± 0.005  us/op
 
 Benchmark                                            Mode  Cnt  Score   Error  Units
-FlatBuffersQueryLatency.testQueryCreatedAt           avgt    5  0.089 ± 0.001  us/op
-FlatBuffersQueryLatency.testQueryUser_location_city  avgt    5  0.105 ± 0.002  us/op
+FlatBuffersQueryLatency.testQueryCreatedAt           avgt    5  0.073 ± 0.002  us/op
+FlatBuffersQueryLatency.testQueryUser_location_city  avgt    5  0.091 ± 0.003  us/op
+
+Benchmark                                            Mode  Cnt  Score    Error  Units
+FlexBuffersQueryLatency.testQueryCreatedAt           avgt    5  0.020 ±  0.001  us/op
+FlexBuffersQueryLatency.testQueryUser_location_city  avgt    5  0.069 ±  0.003  us/op
 
 # Query Throughput Results
 
@@ -62,13 +66,20 @@ Benchmark                                        Mode  Cnt        Score       Er
 CapnProtoQueryThpt.testQueryCreatedAt           thrpt    5  2,268,551.299 ± 49593.543  ops/s
 CapnProtoQueryThpt.testQueryUser_location_city  thrpt    5  2,171,765.108 ± 33404.552  ops/s
 
+ProtoQueryThpt.testQueryCreatedAt                   thrpt    5  2,254,962.269 ±  53314.745  ops/s
+ProtoQueryThpt.testQueryUser_location_city          thrpt    5  2,320,943.325 ± 549808.431  ops/s
+
 Benchmark                                       Mode  Cnt        Score        Error  Units
 PortableQueryThpt.testQueryCreatedAt           thrpt    5  5,595,587.266 ± 106659.600  ops/s
 PortableQueryThpt.testQueryUser_location_city  thrpt    5  1,944,215.669 ±  46301.717  ops/s
 
 Benchmark                                          Mode  Cnt         Score        Error  Units
-FlatBuffersQueryThpt.testQueryCreatedAt           thrpt    5  11,763,810.945 ± 226808.513  ops/s
-FlatBuffersQueryThpt.testQueryUser_location_city  thrpt    5   9,903,232.534 ± 252658.395  ops/s
+FlatBuffersQueryThpt.testQueryCreatedAt           thrpt    5  13,772,732.169 ±  65406.764  ops/s
+FlatBuffersQueryThpt.testQueryUser_location_city  thrpt    5  11,088,965.264 ± 244265.470  ops/s
+
+Benchmark                                          Mode  Cnt         Score        Error  Units
+FlexBuffersQueryThpt.testQueryCreatedAt           thrpt    5  49,689,900.173 ± 348630.321  ops/s
+FlexBuffersQueryThpt.testQueryUser_location_city  thrpt    5  14,530,749.254 ± 696543.873  ops/s
 
 # Serialize Deserialize Latency Results
 

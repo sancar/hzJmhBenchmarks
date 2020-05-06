@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package serialization.flexbuffers;
+package serialization.proto;
 
-import com.google.flatbuffers.FlexBuffers;
 import domain.MetadataCreator;
-import domain.flexbuffers.FlexBuffersSampleFactory;
+import domain.proto.ProtoSampleFactory;
+import domain.proto.ProtoTweetObject;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Measurement;
@@ -35,7 +35,6 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.concurrent.TimeUnit;
 
 
@@ -44,15 +43,25 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.SECONDS)
 @Warmup(iterations = 10, time = 1)
 @Measurement(iterations = 5, time = 1)
-public class FlexBuffersQueryThpt {
+public class ProtoQueryThpt {
 
-    static MetadataCreator metadataCreator = new MetadataCreator();
+    private static ProtoTweetObject.TweetObject toObject(byte[] data) throws IOException {
+        return ProtoTweetObject.TweetObject.parseFrom(data);
+    }
 
-    ByteBuffer data;
+    private static byte[] toData(ProtoTweetObject.TweetObject object) throws IOException {
+        return object.toByteArray();
+    }
+
+    byte[] data;
+    ProtoTweetObject.TweetObject tweetObject;
 
     @Setup
-    public void prepare() {
-        data = FlexBuffersSampleFactory.create(metadataCreator);
+    public void prepare() throws IOException {
+        MetadataCreator metadataCreator = new MetadataCreator();
+        tweetObject = ProtoSampleFactory.create(metadataCreator);
+        data = toData(tweetObject);
+
     }
 
     @TearDown
@@ -61,29 +70,28 @@ public class FlexBuffersQueryThpt {
 
     @Benchmark
     public Object testQueryUser_location_city() throws IOException {
-        FlexBuffers.Vector rootVector = FlexBuffers.getRoot(data).asVector();
-        FlexBuffers.Vector userVector = rootVector.get(3).asVector();
-        FlexBuffers.Vector locationVector = userVector.get(2).asVector();
-        return locationVector.get(0).asString();
+        ProtoTweetObject.TweetObject tweetObject = toObject(data);
+        return tweetObject.getUser().getLocation().getCity();
     }
 
     @Benchmark
     public Object testQueryCreatedAt() throws IOException {
-        FlexBuffers.Vector rootVector = FlexBuffers.getRoot(data).asVector();
-        return rootVector.get(0);
+        ProtoTweetObject.TweetObject tweetObject = toObject(data);
+        return tweetObject.getCreatedEt();
     }
 
+
     public static void main(String[] args) throws IOException {
-        FlexBuffersQueryThpt flexBuffersQueryThpt = new FlexBuffersQueryThpt();
-        flexBuffersQueryThpt.prepare();
-        System.out.println(flexBuffersQueryThpt.testQueryUser_location_city());
-        System.out.println(flexBuffersQueryThpt.testQueryCreatedAt());
+        ProtoQueryThpt protoQueryThpt = new ProtoQueryThpt();
+        protoQueryThpt.prepare();
+        System.out.println(protoQueryThpt.testQueryUser_location_city());
+        System.out.println(protoQueryThpt.testQueryCreatedAt());
         test();
     }
 
     private static void test() {
         Options opt = new OptionsBuilder()
-                .include(FlexBuffersQueryThpt.class.getSimpleName())
+                .include(ProtoQueryThpt.class.getSimpleName())
                 .forks(1)
                 .build();
 
