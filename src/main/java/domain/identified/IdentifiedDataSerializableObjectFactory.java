@@ -17,13 +17,10 @@ package domain.identified;
 
 import com.hazelcast.nio.serialization.DataSerializableFactory;
 import com.hazelcast.nio.serialization.IdentifiedDataSerializable;
-import domain.identified.IDSTweetLocationObject;
-import domain.identified.IDSTweetObject;
-import domain.identified.IDSTweetUserObject;
 
 public class IdentifiedDataSerializableObjectFactory implements DataSerializableFactory {
 
-    static final int FACTORY_ID = 4000;
+    public static final int FACTORY_ID = 4000;
 
     @Override
     public IdentifiedDataSerializable create(int typeId) {
