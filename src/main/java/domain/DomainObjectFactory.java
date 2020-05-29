@@ -24,9 +24,9 @@ import domain.identified.IDSTweetUserObject;
 import domain.portable.PortableTweetLocationObject;
 import domain.portable.PortableTweetObject;
 import domain.portable.PortableTweetUserObject;
-import domain.serializable.SerializableTweetLocationObject;
-import domain.serializable.SerializableTweetObject;
-import domain.serializable.SerializableTweetUserObject;
+import domain.object.SerializableTweetLocationObject;
+import domain.object.SerializableTweetObject;
+import domain.object.SerializableTweetUserObject;
 
 public final class DomainObjectFactory {
 

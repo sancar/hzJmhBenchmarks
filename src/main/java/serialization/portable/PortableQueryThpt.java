@@ -18,7 +18,7 @@ package serialization.portable;
 
 import com.hazelcast.internal.serialization.Data;
 import com.hazelcast.internal.serialization.InternalSerializationService;
-import com.hazelcast.internal.serialization.impl.DefaultPortableReader;
+import com.hazelcast.internal.serialization.impl.portable.DefaultPortableReader;
 import com.hazelcast.internal.serialization.impl.DefaultSerializationServiceBuilder;
 import com.hazelcast.nio.serialization.PortableReader;
 import domain.MetadataCreator;

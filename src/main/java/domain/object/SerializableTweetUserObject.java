@@ -1,4 +1,4 @@
-package domain.serializable;
+package domain.object;
 
 import domain.AbstractTweetUserObject;
 

@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-package domain.object;
+package domain.compact;
 
 import domain.MetadataCreator;
-import domain.TweetLocationObject;
-import domain.TweetObject;
-import domain.TweetUserObject;
 
-public class ObjectSampleFactory {
+public class CompactSampleFactory {
 
-    public static TweetObject create(MetadataCreator creator) {
-        TweetLocationObject locationObject = new SerializableTweetLocationObject();
+    public static CompactTweetObject create(MetadataCreator creator) {
+        CompactTweetLocationObject locationObject = new CompactTweetLocationObject();
         locationObject.setCity(creator.getCity());
         locationObject.setCountry(creator.getCountry());
 
-        TweetUserObject userObject = new SerializableTweetUserObject();
+        CompactTweetUserObject userObject = new CompactTweetUserObject();
         userObject.setDescription(creator.getDescription());
         userObject.setId(creator.getId());
         userObject.setLocation(locationObject);
@@ -36,7 +33,7 @@ public class ObjectSampleFactory {
         userObject.setScreenName(creator.getScreenName());
         userObject.setUrl(creator.getUrl());
 
-        TweetObject object = new SerializableTweetObject();
+        CompactTweetObject object = new CompactTweetObject();
         object.setCreatedAt(creator.getCreatedAt());
         object.setIdStr(creator.getIdStr());
         object.setText(creator.getText());

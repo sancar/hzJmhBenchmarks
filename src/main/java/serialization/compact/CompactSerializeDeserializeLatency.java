@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008-2019, Hazelcast, Inc. All Rights Reserved.
+ * Copyright (c) 2008-2020, Hazelcast, Inc. All Rights Reserved.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,18 @@
  * limitations under the License.
  */
 
-package serialization.portable;
+package serialization.compact;
 
+import com.hazelcast.config.GlobalSerializerConfig;
+import com.hazelcast.config.SerializationConfig;
 import com.hazelcast.internal.serialization.Data;
 import com.hazelcast.internal.serialization.InternalSerializationService;
-import com.hazelcast.internal.serialization.impl.portable.DefaultPortableReader;
 import com.hazelcast.internal.serialization.impl.DefaultSerializationServiceBuilder;
-import com.hazelcast.nio.serialization.PortableReader;
+import com.hazelcast.nio.serialization.compact.CompactStreamSerializer;
+import com.hazelcast.nio.serialization.compact.GenericRecord;
 import domain.MetadataCreator;
-import domain.TweetObject;
-import domain.portable.PortableObjectFactory;
-import domain.portable.PortableSampleFactory;
+import domain.compact.CompactSampleFactory;
+import domain.compact.CompactTweetObject;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Measurement;
@@ -49,16 +50,24 @@ import java.util.concurrent.TimeUnit;
 @OutputTimeUnit(TimeUnit.MICROSECONDS)
 @Warmup(iterations = 10, time = 1)
 @Measurement(iterations = 5, time = 1)
-public class PortableQueryLatency {
+public class CompactSerializeDeserializeLatency {
 
+    static MetadataCreator metadataCreator = new MetadataCreator();
     private InternalSerializationService serializationService;
     private Data data;
 
     @Setup
     public void prepare() {
-        serializationService = new DefaultSerializationServiceBuilder().addPortableFactory(PortableObjectFactory.FACTORY_ID, new PortableObjectFactory()).build();
+        SerializationConfig serializationConfig = new SerializationConfig();
+        GlobalSerializerConfig globalSerializerConfig = new GlobalSerializerConfig();
+        CompactStreamSerializer compactStreamSerializer = new CompactStreamSerializer();
+        globalSerializerConfig.setImplementation(compactStreamSerializer);
+        globalSerializerConfig.setOverrideJavaSerialization(true);
+        serializationConfig.setGlobalSerializerConfig(globalSerializerConfig);
+        serializationService = new DefaultSerializationServiceBuilder().setConfig(serializationConfig).build();
+
         MetadataCreator metadataCreator = new MetadataCreator();
-        TweetObject tweetObject = PortableSampleFactory.create(metadataCreator);
+        CompactTweetObject tweetObject = CompactSampleFactory.create(metadataCreator);
         data = serializationService.toData(tweetObject);
     }
 
@@ -67,30 +76,28 @@ public class PortableQueryLatency {
     }
 
     @Benchmark
-    public Object testQueryUser_location_city() throws IOException {
-        PortableReader reader = serializationService.createPortableReader(data);
-        return ((DefaultPortableReader) reader).read("user.location.city");
+    public Data testToData() {
+        CompactTweetObject tweetObject = CompactSampleFactory.create(metadataCreator);
+        return serializationService.toData(tweetObject);
     }
 
     @Benchmark
-    public Object testQueryCreatedAt() throws IOException {
-        PortableReader reader = serializationService.createPortableReader(data);
-        return ((DefaultPortableReader) reader).read("createdAt");
+    public CompactTweetObject testToObject() throws IOException {
+        GenericRecord genericRecord = serializationService.toObject(data);
+        return genericRecord.toObject(CompactTweetObject.class);
     }
 
-
     public static void main(String[] args) throws IOException {
-        PortableQueryLatency portableQueryLatency = new PortableQueryLatency();
-        portableQueryLatency.prepare();
-        System.out.println("Data length " + portableQueryLatency.data.toByteArray().length);
-        System.out.println(portableQueryLatency.testQueryUser_location_city());
-        System.out.println(portableQueryLatency.testQueryCreatedAt());
-        test();
+        CompactSerializeDeserializeLatency test = new CompactSerializeDeserializeLatency();
+        test.prepare();
+        System.out.println("Data Length : " + test.testToData().toByteArray().length);
+        System.out.println(test.testToObject());
+//        test();
     }
 
     private static void test() {
         Options opt = new OptionsBuilder()
-                .include(PortableQueryLatency.class.getSimpleName())
+                .include(CompactSerializeDeserializeLatency.class.getSimpleName())
                 .forks(1)
                 .build();
 

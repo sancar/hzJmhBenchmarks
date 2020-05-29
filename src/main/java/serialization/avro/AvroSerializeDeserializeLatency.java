@@ -56,6 +56,14 @@ import java.util.concurrent.TimeUnit;
 @Measurement(iterations = 5, time = 1)
 public class AvroSerializeDeserializeLatency {
 
+//    private static TweetObject toObject(byte[] data) throws IOException {
+//        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
+//        BinaryDecoder decoder = DecoderFactory.get().binaryDecoder(byteArrayInputStream, null);
+//        DatumReader<TweetObject> datumReader = new SpecificDatumReader<>(domain.avro.TweetObject.class);
+//        TweetObject tweetObject = datumReader.read(null, decoder);
+//        return tweetObject;
+//    }
+
     private static GenericRecord toObject(byte[] data) throws IOException {
         DatumReader<TweetObject> datumReader = new SpecificDatumReader<>(domain.avro.TweetObject.class);
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(data);
