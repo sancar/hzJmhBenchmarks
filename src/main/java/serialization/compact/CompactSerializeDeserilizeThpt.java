@@ -21,7 +21,6 @@ import com.hazelcast.config.SerializationConfig;
 import com.hazelcast.internal.serialization.Data;
 import com.hazelcast.internal.serialization.InternalSerializationService;
 import com.hazelcast.internal.serialization.impl.DefaultSerializationServiceBuilder;
-import com.hazelcast.nio.serialization.compact.CompactStreamSerializer;
 import domain.MetadataCreator;
 import domain.compact.CompactSampleFactory;
 import domain.compact.CompactTweetObject;
@@ -57,13 +56,7 @@ public class CompactSerializeDeserilizeThpt {
 
     @Setup
     public void prepare() {
-        SerializationConfig serializationConfig = new SerializationConfig();
-        GlobalSerializerConfig globalSerializerConfig = new GlobalSerializerConfig();
-        CompactStreamSerializer compactStreamSerializer = new CompactStreamSerializer();
-        globalSerializerConfig.setImplementation(compactStreamSerializer);
-        globalSerializerConfig.setOverrideJavaSerialization(true);
-        serializationConfig.setGlobalSerializerConfig(globalSerializerConfig);
-        serializationService = new DefaultSerializationServiceBuilder().setConfig(serializationConfig).build();
+        serializationService = new DefaultSerializationServiceBuilder().build();
 
         MetadataCreator metadataCreator = new MetadataCreator();
         CompactTweetObject tweetObject = CompactSampleFactory.create(metadataCreator);

@@ -18,6 +18,8 @@ package serialization.portable;
 
 import com.hazelcast.internal.serialization.Data;
 import com.hazelcast.internal.serialization.InternalSerializationService;
+import com.hazelcast.internal.serialization.impl.GenericRecordQueryReader;
+import com.hazelcast.internal.serialization.impl.InternalGenericRecord;
 import com.hazelcast.internal.serialization.impl.portable.DefaultPortableReader;
 import com.hazelcast.internal.serialization.impl.DefaultSerializationServiceBuilder;
 import com.hazelcast.nio.serialization.PortableReader;
@@ -68,14 +70,16 @@ public class PortableQueryLatency {
 
     @Benchmark
     public Object testQueryUser_location_city() throws IOException {
-        PortableReader reader = serializationService.createPortableReader(data);
-        return ((DefaultPortableReader) reader).read("user.location.city");
+        InternalGenericRecord internalGenericRecord = serializationService.readAsInternalGenericRecord(data);
+        GenericRecordQueryReader reader = new GenericRecordQueryReader(internalGenericRecord);
+        return reader.read("user.location.city");
     }
 
     @Benchmark
     public Object testQueryCreatedAt() throws IOException {
-        PortableReader reader = serializationService.createPortableReader(data);
-        return ((DefaultPortableReader) reader).read("createdAt");
+        InternalGenericRecord internalGenericRecord = serializationService.readAsInternalGenericRecord(data);
+        GenericRecordQueryReader reader = new GenericRecordQueryReader(internalGenericRecord);
+        return reader.read("createdAt");
     }
 
 

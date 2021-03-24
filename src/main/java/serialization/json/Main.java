@@ -16,9 +16,14 @@
 
 package serialization.json;
 
+import com.hazelcast.core.HazelcastJsonValue;
+import com.hazelcast.internal.serialization.Data;
+import com.hazelcast.internal.serialization.SerializationService;
+import com.hazelcast.internal.serialization.impl.DefaultSerializationServiceBuilder;
 import domain.MetadataCreator;
 import domain.json.JsonSampleFactory;
 import domain.json.TweetJsonFactory;
+import domain.portable.PortableObjectFactory;
 
 public class Main {
 
@@ -28,5 +33,9 @@ public class Main {
         JsonSampleFactory jsonSampleFactory = new JsonSampleFactory(tweetJsonFactory, metadataCreator);
         System.out.println(jsonSampleFactory.create().toString().length());
         System.out.println(jsonSampleFactory.create());
+
+        SerializationService serializationService = new DefaultSerializationServiceBuilder().build();
+        Data data = serializationService.toData(jsonSampleFactory.create());
+        System.out.println(data.toByteArray().length);
     }
 }

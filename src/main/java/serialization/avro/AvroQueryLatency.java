@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package serialization;
+package serialization.avro;
 
 import domain.MetadataCreator;
 import org.apache.avro.Schema;

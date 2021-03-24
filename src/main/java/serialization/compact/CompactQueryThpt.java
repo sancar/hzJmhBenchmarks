@@ -21,8 +21,8 @@ import com.hazelcast.config.SerializationConfig;
 import com.hazelcast.internal.serialization.Data;
 import com.hazelcast.internal.serialization.InternalSerializationService;
 import com.hazelcast.internal.serialization.impl.DefaultSerializationServiceBuilder;
-import com.hazelcast.nio.serialization.CustomValueReader;
-import com.hazelcast.nio.serialization.compact.CompactStreamSerializer;
+import com.hazelcast.internal.serialization.impl.GenericRecordQueryReader;
+import com.hazelcast.internal.serialization.impl.InternalGenericRecord;
 import domain.MetadataCreator;
 import domain.compact.CompactSampleFactory;
 import domain.compact.CompactTweetObject;
@@ -57,13 +57,7 @@ public class CompactQueryThpt {
 
     @Setup
     public void prepare() throws IOException {
-        SerializationConfig serializationConfig = new SerializationConfig();
-        GlobalSerializerConfig globalSerializerConfig = new GlobalSerializerConfig();
-        CompactStreamSerializer compactStreamSerializer = new CompactStreamSerializer();
-        globalSerializerConfig.setImplementation(compactStreamSerializer);
-        globalSerializerConfig.setOverrideJavaSerialization(true);
-        serializationConfig.setGlobalSerializerConfig(globalSerializerConfig);
-        serializationService = new DefaultSerializationServiceBuilder().setConfig(serializationConfig).build();
+        serializationService = new DefaultSerializationServiceBuilder().build();
 
         MetadataCreator metadataCreator = new MetadataCreator();
         CompactTweetObject tweetObject = CompactSampleFactory.create(metadataCreator);
@@ -76,13 +70,15 @@ public class CompactQueryThpt {
 
     @Benchmark
     public Object testQueryUser_location_city() throws IOException {
-        CustomValueReader reader = serializationService.createCustomValueReader(data);
+        InternalGenericRecord internalGenericRecord = serializationService.readAsInternalGenericRecord(data);
+        GenericRecordQueryReader reader = new GenericRecordQueryReader(internalGenericRecord);
         return reader.read("user.location.city");
     }
 
     @Benchmark
     public Object testQueryCreatedAt() throws IOException {
-        CustomValueReader reader = serializationService.createCustomValueReader(data);
+        InternalGenericRecord internalGenericRecord = serializationService.readAsInternalGenericRecord(data);
+        GenericRecordQueryReader reader = new GenericRecordQueryReader(internalGenericRecord);
         return reader.read("createdAt");
     }
 
