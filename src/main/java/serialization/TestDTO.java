@@ -1,4 +1,4 @@
-package domain;
+package serialization;
 
 import com.hazelcast.nio.serialization.Portable;
 import com.hazelcast.nio.serialization.PortableReader;
@@ -6,30 +6,34 @@ import com.hazelcast.nio.serialization.PortableWriter;
 
 import java.io.IOException;
 
-public class PortableTweetLocationObject extends AbstractTweetLocationObject implements Portable {
+public class TestDTO implements Portable {
 
-    static final int CLASS_ID = 3;
+    private long id;
 
-    @Override
-    public int getClassId() {
-        return CLASS_ID;
+    public TestDTO() {
+    }
+
+    public TestDTO(long id) {
+        this.id = id;
     }
 
     @Override
     public int getFactoryId() {
-        return PortableObjectFactory.FACTORY_ID;
+        return 1;
     }
 
+    @Override
+    public int getClassId() {
+        return 1;
+    }
 
     @Override
     public void writePortable(PortableWriter writer) throws IOException {
-        writer.writeUTF("country", country);
-        writer.writeUTF("city", city);
+        writer.writeLong("i", id);
     }
 
     @Override
     public void readPortable(PortableReader reader) throws IOException {
-        country = reader.readUTF("country");
-        city = reader.readUTF("city");
+        id = reader.readLong("i");
     }
 }

@@ -18,9 +18,10 @@ package serialization;
 
 import com.hazelcast.config.SerializationConfig;
 import com.hazelcast.internal.serialization.Data;
-import com.hazelcast.internal.serialization.InternalSerializationService;
+import com.hazelcast.internal.serialization.SerializationService;
 import com.hazelcast.internal.serialization.impl.DefaultSerializationServiceBuilder;
-import com.hazelcast.nio.serialization.ReflectivePortableSerializer;
+import com.hazelcast.nio.serialization.Portable;
+import com.hazelcast.nio.serialization.PortableFactory;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.BenchmarkMode;
 import org.openjdk.jmh.annotations.Measurement;
@@ -37,6 +38,7 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.io.IOException;
+import java.nio.ByteOrder;
 import java.util.concurrent.TimeUnit;
 
 
@@ -47,63 +49,26 @@ import java.util.concurrent.TimeUnit;
 @Measurement(iterations = 5)
 public class PortableSerializeDeserializeLatency {
 
-    public static class EmployeeDTO {
-
-        private String name;
-        private int age;
-
-        public EmployeeDTO() {
-        }
-
-        public EmployeeDTO(String name, int age) {
-            this.name = name;
-            this.age = age;
-        }
-
-        @Override
-        public String toString() {
-            return "EmployeeDTO{" +
-                    "name='" + name + '\'' +
-                    ", age=" + age +
-                    '}';
-        }
-    }
-
-    private InternalSerializationService serializationService;
+    private SerializationService serializationService;
     private Data data;
-    EmployeeDTO employeeDTO = new EmployeeDTO("sancar", 30);
+    TestDTO testDTO = new TestDTO(231030210);
 
     @Setup
     public void prepare() {
         SerializationConfig config = new SerializationConfig();
-        config.addExternalPortableClass(EmployeeDTO.class, 1, 1, 1, new ReflectivePortableSerializer(), EmployeeDTO::new);
-//        config.addExternalPortableClass(EmployeeDTO.class, 1, 1, 1, new ReflectivePortableSerializer());
-//        config.addExternalPortableClass(EmployeeDTO.class, 1, 1, 1, new SlowReflectivePortableSerializer());
-//        config.addExternalPortableClass(EmployeeDTO.class, 1, 1, 1, new UnsafeReflectivePortableSerializer());
-//        config.addExternalPortableClass(EmployeeDTO.class, 1, 1, 1);
-//        config.addExternalPortableClass(EmployeeDTO.class, 1, 1, 1,
-//                new PortableSerializer<EmployeeDTO>() {
-//                    @Override
-//                    public void write(PortableContext.ExternalPortableContext context, PortableWriter writer, EmployeeDTO dto) throws IOException {
-//                        writer.writeUTF("name", dto.name);
-//                        writer.writeInt("age", dto.age);
-//                    }
-//
-//                    @Override
-//                    public EmployeeDTO read(PortableContext.ExternalPortableContext context, PortableReader reader) throws IOException {
-//                        String name = reader.readUTF("name");
-//                        int age = reader.readInt("age");
-//                        return new EmployeeDTO(name, age);
-//                    }
-//                });
+//        config.setByteOrder(ByteOrder.LITTLE_ENDIAN); uncomment and compare
+
+        config.addPortableFactory(1, new PortableFactory() {
+            @Override
+            public Portable create(int classId) {
+                return new TestDTO();
+            }
+        });
 
 
-        serializationService = new DefaultSerializationServiceBuilder().setConfig(config).build();
-//        MetadataCreator metadataCreator = new MetadataCreator();
-//        DomainObjectFactory objectFactory = DomainObjectFactory.newFactory(DomainObjectFactory.Strategy.PORTABLE);
-//        ObjectSampleFactory factory = new ObjectSampleFactory(objectFactory, metadataCreator);
-//        tweetObject = factory.create();
-        data = serializationService.toData(employeeDTO);
+        serializationService = new DefaultSerializationServiceBuilder()
+                .setConfig(config).setAllowUnsafe(true).build();
+        data = serializationService.toData(testDTO);
     }
 
     @TearDown
@@ -112,7 +77,7 @@ public class PortableSerializeDeserializeLatency {
 
     @Benchmark
     public Object testToData() throws IOException {
-        return serializationService.toData(employeeDTO);
+        return serializationService.toData(testDTO);
     }
 
     @Benchmark
