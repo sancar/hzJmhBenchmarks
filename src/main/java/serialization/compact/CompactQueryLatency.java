@@ -18,7 +18,6 @@ package serialization.compact;
 
 import com.hazelcast.internal.serialization.Data;
 import com.hazelcast.internal.serialization.InternalSerializationService;
-import com.hazelcast.internal.serialization.impl.DefaultSerializationServiceBuilder;
 import com.hazelcast.internal.serialization.impl.GenericRecordQueryReader;
 import com.hazelcast.internal.serialization.impl.InternalGenericRecord;
 import domain.MetadataCreator;
@@ -55,7 +54,7 @@ public class CompactQueryLatency {
 
     @Setup
     public void prepare() {
-        serializationService = new DefaultSerializationServiceBuilder().build();
+        serializationService = HazelcastUtils.newCompactEnabledSerializationService();
 
         MetadataCreator metadataCreator = new MetadataCreator();
         CompactTweetObject tweetObject = CompactSampleFactory.create(metadataCreator);
